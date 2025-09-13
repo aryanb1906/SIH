@@ -1,16 +1,92 @@
-# FarmGrow - Gamified Sustainable Farming Platform
+<div align="center">
+   <img src="public/placeholder-logo.png" alt="FarmGrow" height="82" />
+  
+   <h1>FarmGrow – Gamified Sustainable Farming Platform</h1>
+   <p><strong>Empowering farmers with sustainable practices through missions, community, rewards, and AI assistance.</strong></p>
+   <p>
+      <a href="#architecture">Architecture</a> •
+      <a href="#tech-stack">Tech Stack</a> •
+      <a href="#getting-started">Getting Started</a> •
+      <a href="#ai-chat-flow">AI Chat</a> •
+      <a href="#design-system">Design System</a> •
+      <a href="#roadmap">Roadmap</a>
+   </p>
+</div>
 
-A comprehensive platform that motivates farmers to adopt sustainable agricultural practices through interactive learning, community engagement, and real rewards.
+---
 
-## Features
+## Overview
+FarmGrow motivates farmers to adopt eco-friendly agricultural techniques via structured learning missions, a progress & rewards layer, a collaborative community, and an AI-powered agronomy assistant. Built with performance, accessibility, and extensibility in mind.
 
-- **Interactive Learning Missions**: Complete challenges like "Mulching Challenge" and "Bio-Pesticide Switch"
-- **Progress Dashboard**: Track sustainability scores, achievements, and farming impact
-- **Community Features**: Connect with local farmers, share progress, and participate in leaderboards
-- **Rewards System**: Earn points redeemable for farming supplies, training, and certifications
-- **AI Doubt Support**: Get instant answers to farming questions using Gemini AI
+## Core Features
 
-## Setup
+| Area | Description |
+|------|-------------|
+| Missions | Guided, goal‑oriented sustainable practice challenges. |
+| Dashboard | Tracks points, progress, achievements, and impact metrics. |
+| Community | Space for knowledge sharing (future: threads, comments). |
+| Rewards | Earn and redeem points for inputs, training, certifications. |
+| AI Support | Context‑aware Gemini assistant for agronomy queries. |
+| Authentication | Google OAuth (email provider optional). |
+| Gamification | Badges, XP, streaks (extensible). |
+
+---
+
+## Architecture
+
+High‑level logical layers:
+
+1. UI Layer (Next.js App Router + Tailwind + Radix primitives)
+2. Auth Layer (NextAuth.js – session + OAuth providers)
+3. AI Layer (Gemini API – routed through `/api/chat`)
+4. Domain Modules (missions, rewards, community, support)
+5. Design System (reusable UI components under `components/ui` + layout primitives)
+6. Utilities (helper functions in `lib/` – can expand later)
+
+```
+app/
+   page.tsx                # Landing + navigation
+   dashboard/              # Auth-gated dashboard
+   missions/               # Missions listing (static placeholder)
+   rewards/                # Rewards center
+   community/              # Community hub (future expansion)
+   support/                # Full AI chat interface
+   signin/                 # Auth sign-in page
+   api/
+      auth/[...nextauth]/   # NextAuth route handler
+      chat/route.ts         # Gemini proxy endpoint
+components/
+   ai-chat-widget.tsx      # Floating quick-access AI widget
+   mission-card.tsx        # Presentational mission card
+   rewards-dashboard.tsx   # Rewards summary module
+   session-header.tsx      # Session-aware header (login/logout)
+   container.tsx           # Layout width & horizontal padding control
+   ui/                     # Design system primitives (button, card, etc.)
+hooks/                    # Reusable stateful logic
+lib/                      # Utilities (e.g., `utils.ts`)
+public/                   # Static assets
+styles/                   # Global stylesheet & Tailwind layers
+```
+
+### Data Flow (Current MVP)
+Data is mock/static. Future persistence (PostgreSQL + Prisma or Supabase) can integrate via server actions or API routes.
+
+### Auth Flow
+1. User clicks `Sign In` → `/api/auth/signin` (Google)
+2. Google OAuth → callback → session cookie
+3. Protected routes (e.g., `/dashboard`) guard via session check
+4. `SessionHeader` reflects login state & sign-out
+
+### <a id="ai-chat-flow"></a>AI Chat Flow
+1. User submits question (widget or `/support`)
+2. Frontend POST → `/api/chat` `{ message, context }`
+3. System prompt constrains output (farming only, plain text)
+4. Gemini returns answer → JSON `{ message }`
+5. UI renders plain text (no markdown parsing)
+
+---
+
+## <a id="getting-started"></a>Getting Started
 
 1. Clone the repository
 2. Copy `.env.example` to `.env.local`
@@ -21,7 +97,7 @@ A comprehensive platform that motivates farmers to adopt sustainable agricultura
 5. Run the development server: `npm run dev` (or `pnpm dev`)
 6. Open `http://localhost:3000`
 
-### Required Environment Variables
+### Environment Variables
 
 Auth & AI features require keys/secrets. Minimal required for basic login + chat:
 
@@ -42,10 +118,10 @@ EMAIL_SERVER=smtp://user:pass@smtp.example.com:587
 EMAIL_FROM=FarmGrow <no-reply@example.com>
 ```
 
-### Getting a Gemini API Key
+### Obtaining a Gemini API Key
 Visit Google AI Studio: https://makersuite.google.com/app/apikey and create a key, then set `GEMINI_API_KEY`.
 
-### Running with pnpm (Optional)
+### Using pnpm (Optional)
 If you prefer `pnpm` but PowerShell blocks scripts, open a **Command Prompt** and run:
 ```
 cmd /c pnpm install
@@ -82,6 +158,8 @@ npm run lint    # Lint (currently disabled during build in config)
 ---
 Happy farming and sustainable growing! 🌱
 
+---
+
 ## AI Doubt Support
 
 The platform includes an AI-powered doubt support system that helps farmers get instant answers to their questions about:
@@ -98,7 +176,9 @@ The AI assistant is accessible through:
 - Floating chat widget available on all pages
 - Quick question buttons for common farming queries
 
-## Tech Stack
+---
+
+## <a id="tech-stack"></a>Tech Stack
 
 - **Framework**: Next.js 14 with App Router
 - **UI**: Tailwind CSS with Radix UI components
@@ -106,10 +186,69 @@ The AI assistant is accessible through:
 - **Icons**: Lucide React
 - **Analytics**: Vercel Analytics
 
+---
+
+## Design System
+
+Key conventions (see `DESIGN.md` if present):
+
+| Aspect | Convention |
+|--------|-----------|
+| Spacing scale | 2 4 6 8 10 12 16 20 24 32 (Tailwind utilities) |
+| Container | Centered max-width via `container.tsx` |
+| Brand accents | Gold (rewards/CTA), Green (AI/eco), Neutral grays for text |
+| Typography | Utility classes (`text-sm/2xl`, `font-bold`, `tracking-tight`) |
+| Radius | `rounded-xl` for CTAs, `rounded-md` for cards, full for circular icons |
+| Focus styles | Rely on `focus-visible` ring utilities for accessibility |
+
+Accessibility:
+* Skip link present (`#main-content`)
+* Semantic regions (`header`, `main`)
+* Color contrast aimed at WCAG AA
+
+Extending components: add new primitives in `components/ui/` following existing patterns (ref forwarding + prop variants).
+
+---
+
 ## Environment Variables (Summary)
 
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`: Google OAuth login
-- `GEMINI_API_KEY`: Required for AI doubt support feature
-- `NEXTAUTH_SECRET`: Session/JWT encryption secret
-- `NEXTAUTH_URL`: Base URL (important for emails / callbacks)
-- `EMAIL_SERVER`, `EMAIL_FROM`: Optional email sign-in
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` – Google OAuth login
+- `GEMINI_API_KEY` – AI assistant
+- `NEXTAUTH_SECRET` – Session/JWT encryption
+- `NEXTAUTH_URL` – Base URL (emails / callbacks)
+- `EMAIL_SERVER`, `EMAIL_FROM` – Optional email sign-in
+
+---
+
+## Roadmap
+
+| Phase | Goal | Highlights |
+|-------|------|------------|
+| 1 | MVP polish | Auth, static missions, AI chat, mock rewards |
+| 2 | Persistence | Database integration (Prisma + Postgres) |
+| 3 | Community | Threads, replies, moderation tools |
+| 4 | Advanced AI | Multi-turn context, cropping plans |
+| 5 | Mobile PWA | Offline support, install prompts |
+| 6 | Marketplace | Partner reward catalog |
+
+---
+
+## Contributing
+
+1. Fork & branch
+2. Install deps & configure env
+3. `npm run dev`
+4. Follow design + code conventions
+5. Open PR with description & screenshots
+
+### Planned Quality Enhancements
+Pending tasks: ESLint setup, spacing normalization, accessibility sweep, `cn` helper extraction, test harness.
+
+---
+
+## License
+Add a license file (e.g., MIT) before public distribution.
+
+---
+
+Thanks for supporting sustainable agriculture! 🌱
