@@ -10,29 +10,16 @@ import Link from "next/link"
 
 const leaderboardData = [
   { rank: 1, name: "Priya Sharma", location: "Karnataka", score: 2450, avatar: "/placeholder.svg?height=40&width=40" },
-  {
-    rank: 2,
-    name: "Raj Kumar",
-    location: "Tamil Nadu",
-    score: 2380,
-    avatar: "/placeholder.svg?height=40&width=40",
-    isCurrentUser: true,
-  },
+  { rank: 2, name: "Raj Kumar", location: "Tamil Nadu", score: 2380, avatar: "/placeholder.svg?height=40&width=40", isCurrentUser: true},
   { rank: 3, name: "Amit Patel", location: "Gujarat", score: 2290, avatar: "/placeholder.svg?height=40&width=40" },
   { rank: 4, name: "Sunita Devi", location: "Punjab", score: 2150, avatar: "/placeholder.svg?height=40&width=40" },
-  {
-    rank: 5,
-    name: "Ravi Reddy",
-    location: "Andhra Pradesh",
-    score: 2080,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
+  { rank: 5, name: "Ravi Reddy", location: "Andhra Pradesh", score: 2080, avatar: "/placeholder.svg?height=40&width=40" },
 ];
   // <Container className="py-4">
 
-    const communityPosts = [
-    {
-      id: 1,
+const communityPosts = [
+  {
+    id: 1,
     author: "Priya Sharma",
     location: "Karnataka",
     avatar: "/placeholder.svg?height=40&width=40",
@@ -44,35 +31,33 @@ const leaderboardData = [
     comments: 8,
     badge: "Soil Health Champion",
   },
-    {
-      id: 2,
+  {
+    id: 2,
     author: "Amit Patel",
     location: "Gujarat",
     avatar: "/placeholder.svg?height=40&width=40",
     time: "5 hours ago",
-    content:
-      "Sharing my drip irrigation setup for fellow farmers. This system has reduced my water usage by 40% while increasing yield. Happy to answer questions!",
-      likes: 31,
-      comments: 12,
-      badge: "Water Saver",
+    content: "Sharing my drip irrigation setup for fellow farmers. This system has reduced my water usage by 40% while increasing yield. Happy to answer questions!",
+    likes: 31,
+    comments: 12,
+    badge: "Water Saver",
   },
-      {
-        id: 3,
-      author: "Sunita Devi",
-      location: "Punjab",
-      avatar: "/placeholder.svg?height=40&width=40",
-      time: "1 day ago",
-      content:
-      "Bio-pesticide preparation workshop was amazing! Made my own neem oil spray today. The community knowledge sharing is incredible.",
-      likes: 18,
-      comments: 6,
-      badge: "Eco Warrior",
+  {
+    id: 3,
+    author: "Sunita Devi",
+    location: "Punjab",
+    avatar: "/placeholder.svg?height=40&width=40",
+    time: "1 day ago",
+    content: "Bio-pesticide preparation workshop was amazing! Made my own neem oil spray today. The community knowledge sharing is incredible.",
+    likes: 18,
+    comments: 6,
+    badge: "Eco Warrior",
   },
 ];
 
-      export default function CommunityPage() {
+export default function CommunityPage() {
   return (
-    
+
       <div className="min-h-screen bg-background">
         {/* Header */}
         <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -95,7 +80,7 @@ const leaderboardData = [
                 Share Progress
               </Button>
             </div>
-          </div>
+          </Container>
         </header>
 
         <div className="container mx-auto px-4 py-8">
@@ -463,7 +448,7 @@ const leaderboardData = [
               </div>
             </TabsContent>
           </Tabs>
-        </Container>
+        </div>
       </div>
       )
 }
