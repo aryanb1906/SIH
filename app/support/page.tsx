@@ -119,98 +119,143 @@ export default function SupportPage() {
     sendMessage()
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Container className="py-8">
-        <div className="mb-6 flex items-center gap-3">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-gold-400 hover:text-gold-500 transition-colors group">
-            <span className="p-2 rounded-full bg-black border border-gold-400 group-hover:bg-gold-900">
-              <ArrowLeft className="h-4 w-4 text-gold-400" />
-            </span>
-            <span className="font-medium text-white">Back to Home</span>
-          </Link>
-        </div>
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-3 bg-black rounded-full border border-gold-400">
-                <MessageCircle className="h-8 w-8 text-gold-400" />
-              </div>
-              <h1 className="text-3xl font-bold text-white">AI Doubt Support</h1>
-            </div>
-            <p className="text-white/80 max-w-2xl mx-auto text-base">
-              Get instant answers to your farming questions from our AI assistant trained on sustainable agriculture practices.
-            </p>
+return (
+  <div className="min-h-screen bg-gray-50 text-gray-900">
+    <Container className="py-10 px-4 md:px-8">
+      {/* Back Button */}
+      <div className="mb-8">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <span className="p-2 rounded-full bg-white border border-gray-300 shadow-sm">
+            <ArrowLeft className="h-4 w-4 text-gray-700" />
+          </span>
+          Back to Home
+        </Link>
+      </div>
+
+      {/* Page Header */}
+      <div className="text-center mb-10">
+        <div className="flex items-center justify-center gap-3 mb-5">
+          <div className="p-4 bg-white rounded-full border border-gray-300 shadow">
+            <MessageCircle className="h-8 w-8 text-blue-500" />
           </div>
-          <div className="lg:col-span-2">
-            <Card className="h-[600px] flex flex-col bg-black border border-[#333] rounded-xl shadow-lg">
-              <CardHeader className="border-b bg-black rounded-t-xl shadow-md">
-                <CardTitle className="flex items-center gap-2 text-white text-xl font-bold">
-                  <Bot className="h-5 w-5 text-gold-400 animate-bounce" />
-                  AI Farming Assistant
-                  <Badge variant="secondary" className="ml-auto bg-gold-400 text-black animate-pulse">Online</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto p-5 space-y-4 bg-black rounded-b-xl" style={{ borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    {message.sender === "ai" && (
-                      <div className="p-2 bg-green-100 rounded-full border border-green-200 shadow animate-fade-in">
-                        <Bot className="h-4 w-4 text-green-700" />
-                      </div>
-                    )}
-                    <div
-                      className={`max-w-full sm:max-w-[80%] p-3 rounded-lg shadow transition-all duration-300 ${message.sender === "user" ? "bg-green-700 text-white" : "bg-beige-50 text-brown-900 border border-brown-100"}`}
-                      style={{ wordBreak: 'break-word', overflowWrap: 'break-word' }}
-                    >
-                      {/* Systematic, clear answer formatting: split into paragraphs */}
-                      {message.content.split(/\n+/).map((para, idx) => (
-                        <p key={idx} className="text-sm mb-2 whitespace-pre-line">{para.trim()}</p>
-                      ))}
-                      <p className={`text-xs mt-1 ${message.sender === "user" ? "text-green-100" : "text-brown-500"}`}>
-                        {message.timestamp.toLocaleTimeString()}
-                      </p>
-                    </div>
-                    {message.sender === "user" && (
-                      <div className="p-2 bg-green-700 rounded-full shadow animate-fade-in">
-                        <User className="h-4 w-4 text-white" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex gap-3 justify-start">
-                    <div className="p-2 bg-green-100 rounded-full border border-green-200">
-                      <Bot className="h-4 w-4 text-green-700 animate-spin" />
-                    </div>
-                    <div className="bg-beige-50 p-3 rounded-lg border border-brown-100">
-                      <Loader2 className="h-4 w-4 animate-spin text-brown-600" />
-                    </div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
+            AI Doubt Support
+          </h1>
+        </div>
+        <p className="text-gray-600 max-w-2xl mx-auto text-base md:text-lg leading-relaxed">
+          Get instant answers to your farming questions from our AI assistant
+          trained on sustainable agriculture practices.
+        </p>
+      </div>
+
+      {/* Chat Section */}
+      <div className="max-w-5xl mx-auto">
+        <Card className="h-[80vh] flex flex-col bg-white border border-gray-200 rounded-2xl shadow-xl">
+          {/* Header */}
+          <CardHeader className="border-b border-gray-200 px-5 py-4">
+            <CardTitle className="flex items-center gap-2 text-lg md:text-xl font-semibold text-gray-900">
+              <Bot className="h-5 w-5 text-blue-500" />
+              AI Farming Assistant
+              <Badge
+                variant="secondary"
+                className="ml-auto bg-blue-100 text-blue-700 font-medium"
+              >
+                Online
+              </Badge>
+            </CardTitle>
+          </CardHeader>
+
+          {/* Messages (No Scroll) */}
+          <CardContent className="flex-1 px-5 py-6 space-y-6">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex gap-3 ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
+                }`}
+              >
+                {message.sender === "ai" && (
+                  <div className="p-2 bg-blue-100 rounded-full border border-blue-200 shadow-sm">
+                    <Bot className="h-4 w-4 text-blue-600" />
                   </div>
                 )}
-                <div ref={messagesEndRef} />
-              </CardContent>
-              <div className="border-t p-4 bg-black rounded-b-xl" style={{ borderBottomLeftRadius: 16, borderBottomRightRadius: 16 }}>
-                <form onSubmit={handleSubmit} className="flex gap-2">
-                  <Input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="Type your question..."
-                    disabled={isLoading}
-                    className="flex-1 bg-[#111] text-white border border-[#333] rounded-xl px-4 py-3 placeholder:text-white/60 focus:ring-2 focus:ring-gold-400 transition-all duration-200"
-                  />
-                  <Button type="submit" disabled={isLoading || !input.trim()} className="bg-gold-400 hover:bg-gold-500 text-white font-bold rounded-xl px-5 py-3 transition-transform active:scale-95">
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 animate-fade-in" />}
-                  </Button>
-                </form>
+                <div
+                  className={`max-w-full sm:max-w-[75%] md:max-w-[65%] p-4 rounded-2xl shadow-sm text-sm md:text-base leading-relaxed ${
+                    message.sender === "user"
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-900 border border-gray-200"
+                  }`}
+                >
+                  {message.content.split(/\n+/).map((para, idx) => (
+                    <p
+                      key={idx}
+                      className="mb-2 whitespace-pre-line last:mb-0"
+                    >
+                      {para.trim()}
+                    </p>
+                  ))}
+                  <p
+                    className={`text-xs mt-2 ${
+                      message.sender === "user"
+                        ? "text-blue-200"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {message.timestamp.toLocaleTimeString()}
+                  </p>
+                </div>
+                {message.sender === "user" && (
+                  <div className="p-2 bg-blue-600 rounded-full shadow-sm">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                )}
               </div>
-            </Card>
+            ))}
+
+            {isLoading && (
+              <div className="flex gap-3 justify-start">
+                <div className="p-2 bg-blue-100 rounded-full border border-blue-200">
+                  <Bot className="h-4 w-4 text-blue-600 animate-spin" />
+                </div>
+                <div className="bg-blue-50 px-4 py-3 rounded-xl border border-blue-200 shadow-sm">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </CardContent>
+
+          {/* Input */}
+          <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask your farming question..."
+                disabled={isLoading}
+                className="flex-1 bg-white text-gray-900 border border-gray-300 rounded-xl px-4 py-3 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-400"
+              />
+              <Button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl px-5 py-3 transition-transform active:scale-95"
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </form>
           </div>
-        </div>
-      </Container>
-    </div>
-  )
+        </Card>
+      </div>
+    </Container>
+  </div>
+);
+
+
 }
