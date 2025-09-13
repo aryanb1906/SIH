@@ -246,9 +246,6 @@ Pending tasks: ESLint setup, spacing normalization, accessibility sweep, `cn` he
 
 ---
 
-## License
-Add a license file (e.g., MIT) before public distribution.
 
----
 
 Thanks for supporting sustainable agriculture! 🌱
