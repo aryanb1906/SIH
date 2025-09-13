@@ -27,7 +27,8 @@ const leaderboardData = [
     score: 2080,
     avatar: "/placeholder.svg?height=40&width=40",
   },
-  <Container className="py-4">
+];
+  // <Container className="py-4">
 
     const communityPosts = [
     {
@@ -49,7 +50,7 @@ const leaderboardData = [
     location: "Gujarat",
     avatar: "/placeholder.svg?height=40&width=40",
     time: "5 hours ago",
-    <Container className="py-8">
+    content:
       "Sharing my drip irrigation setup for fellow farmers. This system has reduced my water usage by 40% while increasing yield. Happy to answer questions!",
       likes: 31,
       comments: 12,
@@ -67,10 +68,11 @@ const leaderboardData = [
       comments: 6,
       badge: "Eco Warrior",
   },
-      ]
+];
 
       export default function CommunityPage() {
   return (
+    
       <div className="min-h-screen bg-background">
         {/* Header */}
         <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
