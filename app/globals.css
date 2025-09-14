@@ -4,6 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Added missing spacing variable */
+  --spacing: 0.25rem; /* Base spacing unit (4px) */
   /* Updated color palette for farming theme with earth tones and nature colors */
   --background: oklch(1 0 0); /* Pure white background */
   --foreground: oklch(0.35 0 0); /* Dark gray text */
