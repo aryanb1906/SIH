@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageCircle, X, Bot, Loader2, ArrowLeftCircle, Sparkles } from "lucide-react"
+import { MessageCircle, X, Bot, Loader2, Sparkles, Coins } from "lucide-react"
 import Link from "next/link"
 
 export default function AIChatWidget() {
@@ -23,7 +23,14 @@ export default function AIChatWidget() {
     }
   }, [isOpen])
 
-  const quickQuestions = ["Soil health tips?", "Organic pest control?", "Water conservation?", "Government schemes?"]
+  const quickQuestions = [
+    "Organic pest control methods?",
+    "Water conservation techniques?",
+    "Soil health improvement tips?",
+    "Government farming schemes?",
+    "Crop rotation benefits?",
+    "Post-harvest storage tips?",
+  ]
 
   const handleQuickQuestion = async (question: string) => {
     setIsLoading(true)
@@ -34,6 +41,7 @@ export default function AIChatWidget() {
         body: JSON.stringify({
           message: question,
           context: "Quick help widget - brief response needed",
+          userId: "widget-user", // Added user tracking
         }),
       })
       const data = await response.json()
@@ -48,17 +56,23 @@ export default function AIChatWidget() {
   if (!isOpen) {
     return (
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 group">
-        <div className="absolute -top-9 right-0 opacity-0 group-hover:opacity-100 transition text-xs bg-green-700 text-white px-2 py-1 rounded shadow">
-          Ask AI
+        <div className="absolute -top-12 right-0 opacity-0 group-hover:opacity-100 transition text-xs bg-primary text-primary-foreground px-3 py-2 rounded-lg shadow-lg">
+          <div className="flex items-center gap-1">
+            <Bot className="h-3 w-3" />
+            Ask FarmGrow AI
         </div>
-        <Button
-          ref={openBtnRef}
-          aria-label="Open AI help chat"
-          onClick={() => setIsOpen(true)}
-          className="h-14 w-14 rounded-full bg-green-600 hover:bg-green-700 shadow-lg relative overflow-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-green-500"
-        >
-          <span className="absolute inset-0 bg-gradient-to-tr from-green-600/40 to-emerald-400/40 opacity-0 group-hover:opacity-100 transition" />
-          <MessageCircle className="h-6 w-6 relative" />
+      </div>
+      <Button
+        ref={openBtnRef}
+        aria-label="Open FarmGrow AI chat"
+        onClick={() => setIsOpen(true)}
+        className="h-16 w-16 rounded-full bg-primary hover:bg-primary/90 shadow-xl relative overflow-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary animate-pulse"
+      >
+          <span className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-secondary/40 opacity-0 group-hover:opacity-100 transition" />
+          <div className="relative flex flex-col items-center">
+            <Bot className="h-6 w-6" />
+            <Sparkles className="h-3 w-3 text-secondary absolute -top-1 -right-1" />
+          </div>
         </Button>
       </div>
     )
@@ -66,35 +80,42 @@ export default function AIChatWidget() {
 
   return (
     <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
-      <Card className="w-80 max-w-[90vw] shadow-xl border-green-100 animate-in fade-in slide-in-from-bottom-2">
-        <CardHeader className="pb-3">
+      <Card className="w-96 max-w-[95vw] shadow-2xl border-primary/20 animate-in fade-in slide-in-from-bottom-2">
+        <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-secondary/5">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-              <Bot className="h-5 w-5 text-green-600" />
-              <span className="flex items-center gap-1">AI Help <Sparkles className="h-3 w-3 text-amber-400" /></span>
+              <Bot className="h-5 w-5 text-primary" />
+              <span className="flex items-center gap-1">
+                FarmGrow AI 
+                <Sparkles className="h-3 w-3 text-secondary animate-pulse" />
+              </span>
             </CardTitle>
             <Button
               ref={closeBtnRef}
               variant="ghost"
               size="sm"
-              aria-label="Close AI help chat"
+              aria-label="Close FarmGrow AI chat"
               onClick={() => setIsOpen(false)}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <Coins className="h-3 w-3 text-secondary" />
+            Expert farming advice • Earn coins with missions
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {!quickResponse ? (
             <>
-              <p className="text-sm text-gray-600 font-medium">Quick farming questions:</p>
-              <div className="grid grid-cols-2 gap-2">
+              <p className="text-sm text-muted-foreground font-medium">Quick farming questions:</p>
+              <div className="grid grid-cols-1 gap-2">
                 {quickQuestions.map((question, index) => (
                   <Button
                     key={index}
                     variant="outline"
                     size="sm"
-                    className="text-xs h-auto p-2 bg-white hover:bg-green-50 border-green-100 focus-visible:ring-2 focus-visible:ring-green-500"
+                    className="text-xs h-auto p-3 bg-background hover:bg-primary/5 border-primary/20 focus-visible:ring-2 focus-visible:ring-primary/50 text-left justify-start"
                     onClick={() => handleQuickQuestion(question)}
                     disabled={isLoading}
                   >
@@ -103,18 +124,23 @@ export default function AIChatWidget() {
                 ))}
               </div>
               {isLoading && (
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Getting answer...
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  Getting expert advice...
                 </div>
               )}
             </>
           ) : (
             <div className="space-y-3">
-              <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-3 rounded-lg border border-green-100">
-                <p className="text-sm">{quickResponse}</p>
+              <div className="bg-gradient-to-br from-primary/5 to-secondary/5 p-4 rounded-lg border border-primary/20">
+                <p className="text-sm leading-relaxed">{quickResponse}</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => setQuickResponse("")} className="w-full border-green-200">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setQuickResponse("")} 
+                className="w-full border-primary/20 hover:bg-primary/5"
+              >
                 Ask Another Question
               </Button>
             </div>
@@ -122,7 +148,10 @@ export default function AIChatWidget() {
 
           <div className="border-t pt-3">
             <Link href="/support">
-              <Button className="w-full bg-green-600 hover:bg-green-700" aria-label="Open full AI chat support page">Open Full Chat</Button>
+              <Button className="w-full bg-primary hover:bg-primary/90" aria-label="Open full FarmGrow AI chat ">
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Open Full Chat
+              </Button>
             </Link>
           </div>
         </CardContent>
