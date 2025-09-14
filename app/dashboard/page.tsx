@@ -1,278 +1,320 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+"use client"
+
 import { Container } from "@/components/container"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Leaf, ArrowLeft, Trophy, Target, TrendingUp, Calendar, Award, Droplets, Sprout, Users } from "lucide-react"
+import { useAppStore } from "@/lib/store"
+import { useEffect } from "react"
+import { 
+  Trophy, 
+  Target, 
+  BookOpen, 
+  Users, 
+  Package, 
+  Bell, 
+  TrendingUp, 
+  Calendar,
+  Clock,
+  Star,
+  ArrowRight,
+  Leaf,
+  Droplets,
+  Calculator
+} from "lucide-react"
 import Link from "next/link"
+import WeatherWidget from "@/components/weather-widget"
+import CropCalculator from "@/components/crop-calculator"
+import NotificationCenter from "@/components/notification-center"
 
-const achievements = [
-  { name: "Soil Health Champion", icon: Sprout, color: "text-green-600", earned: true },
-  { name: "Water Saver", icon: Droplets, color: "text-blue-600", earned: true },
-  { name: "Eco Warrior", icon: Leaf, color: "text-primary", earned: true },
-  { name: "Community Leader", icon: Users, color: "text-secondary", earned: false },
-  { name: "Master Farmer", icon: Award, color: "text-yellow-600", earned: false },
-]
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
+export default function DashboardPage() {
+  const { 
+    user, 
+    missions, 
+    blogPosts, 
+    notifications, 
+    unreadCount,
+    loadMissions, 
+    loadBlogPosts,
+    addNotification 
+  } = useAppStore()
 
-async function getSession() {
-  // NextAuth exposes session endpoint; we can forward cookie server-side
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/auth/session`, {
-    headers: { cookie: cookies().toString() },
-    cache: "no-store",
-  })
-  if (!res.ok) return null
-  return res.json()
-}
+  useEffect(() => {
+    loadMissions()
+    loadBlogPosts()
+    
+    // Add a welcome notification
+    if (user && notifications.length === 0) {
+      addNotification({
+        title: "Welcome to FarmGrow!",
+        message: "Start your sustainable farming journey by exploring missions and connecting with the community.",
+        type: "info",
+        isRead: false,
+        actionUrl: "/missions"
+      })
+    }
+  }, [user, loadMissions, loadBlogPosts, notifications.length, addNotification])
 
-export default async function DashboardPage() {
-  const session = await getSession()
-  if (!session || !session.user) redirect("/signin")
-  const userName: string = session.user.name || "Farmer"
-  // existing code below adjusted
+  // Mock user data if not authenticated
+  const currentUser = user || {
+    id: "1",
+    name: "Demo Farmer",
+    email: "demo@farmgrow.com",
+    level: 5,
+    xp: 1250,
+    points: 450,
+    streak: 7,
+    location: "Punjab, India",
+    farmSize: 5,
+    crops: ["Rice", "Wheat", "Cotton"]
+  }
 
-  const sustainabilityScore = 78
-  const completedMissions = 12
-  const totalMissions = 25
-  const currentStreak = 15
+  const completedMissions = missions.filter(m => m.isCompleted).length
+  const activeMissions = missions.filter(m => !m.isCompleted && m.progress > 0).length
+  const totalXP = missions.reduce((sum, m) => sum + (m.isCompleted ? m.xpReward : 0), 0)
+  const totalPoints = missions.reduce((sum, m) => sum + (m.isCompleted ? m.pointsReward : 0), 0)
+
+  const recentBlogPosts = blogPosts.slice(0, 3)
+  const upcomingMissions = missions.filter(m => !m.isCompleted).slice(0, 3)
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <Container className="py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-              </Link>
-              <div className="flex items-center gap-2">
-                <Leaf className="h-6 w-6 text-primary" />
-                <h1 className="text-xl font-bold">Progress Dashboard</h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarImage src={session.user.image || "/farmer-avatar.png"} />
-                <AvatarFallback>{(session.user.name || "U").split(" ").map((p: string) => p[0]).join("")}</AvatarFallback>
-              </Avatar>
-              <div className="hidden sm:block">
-                <p className="text-sm font-medium">{userName}</p>
-                <p className="text-xs text-muted-foreground">Welcome back</p>
-              </div>
-            </div>
-          </div>
-        </Container>
-      </header>
-      <Container className="py-8">
-        {/* Welcome Section */}
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted">
+      <Container className="py-10 px-4">
+        {/* Header */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Welcome back, {userName.split(" ")[0]}!</h2>
-          <p className="text-xl text-muted-foreground">
-            You're making great progress on your sustainable farming journey.
+          <h1 className="text-3xl font-bold mb-2">Welcome back, {currentUser.name}!</h1>
+          <p className="text-muted-foreground">
+            Here's your farming dashboard with the latest updates and tools.
           </p>
         </div>
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Sustainability Score</CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Trophy className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{currentUser.level}</div>
+                  <div className="text-sm text-muted-foreground">Level</div>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-bold text-primary">{sustainabilityScore}</div>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <TrendingUp className="h-3 w-3" />
-                <span>+12 this week</span>
+              <div className="mt-3">
+                <div className="flex justify-between text-sm mb-1">
+                  <span>XP Progress</span>
+                  <span>{currentUser.xp}/1500</span>
+                </div>
+                <Progress value={(currentUser.xp / 1500) * 100} className="h-2" />
               </div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Missions Completed</CardTitle>
-                <Trophy className="h-4 w-4 text-muted-foreground" />
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Target className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{completedMissions}</div>
+                  <div className="text-sm text-muted-foreground">Missions Completed</div>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-bold">{completedMissions}/{totalMissions}</div>
-              <Progress value={(completedMissions / totalMissions) * 100} className="h-2 mt-2" />
+              <div className="mt-3">
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Active Missions</span>
+                  <span>{activeMissions}</span>
+                </div>
+                <Progress value={(activeMissions / missions.length) * 100} className="h-2" />
+              </div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Star className="h-5 w-5 text-yellow-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{currentUser.points}</div>
+                  <div className="text-sm text-muted-foreground">Points Earned</div>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-bold text-secondary">{currentStreak}</div>
-              <p className="text-xs text-muted-foreground">days active</p>
+              <div className="mt-3">
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Streak</span>
+                  <span>{currentUser.streak} days</span>
+                </div>
+                <Progress value={(currentUser.streak / 30) * 100} className="h-2" />
+              </div>
             </CardContent>
           </Card>
+
           <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Achievements</CardTitle>
-                <Award className="h-4 w-4 text-muted-foreground" />
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Bell className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold">{unreadCount}</div>
+                  <div className="text-sm text-muted-foreground">New Notifications</div>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="text-2xl font-bold text-accent">3/5</div>
-              <p className="text-xs text-muted-foreground">badges earned</p>
+              <div className="mt-3">
+                <Link href="/notifications">
+                  <Button variant="outline" size="sm" className="w-full">
+                    View All
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Progress Section */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Current Mission */}
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Active Missions */}
             <Card>
               <CardHeader>
-                <CardTitle>Current Mission</CardTitle>
-                <CardDescription>Your active learning challenge</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold">Mulching Challenge</h3>
-                      <p className="text-sm text-muted-foreground">Implement mulching techniques across 2 hectares</p>
-                    </div>
-                    <Badge>In Progress</Badge>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Progress</span>
-                      <span>65%</span>
-                    </div>
-                    <Progress value={65} className="h-3" />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm">Continue Mission</Button>
-                    <Button size="sm" variant="outline" className="bg-transparent">View Details</Button>
-                  </div>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-primary" />
+                    Active Missions
+                  </CardTitle>
+                  <Link href="/missions">
+                    <Button variant="outline" size="sm">
+                      View All
+                      <ArrowRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Weekly Progress Chart */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Weekly Progress</CardTitle>
-                <CardDescription>Your mission completion over the past month</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {[{ week: "Week 1", completed: 3, total: 5 }, { week: "Week 2", completed: 4, total: 5 }, { week: "Week 3", completed: 5, total: 5 }, { week: "Week 4", completed: 2, total: 4 }].map((week, index) => (
-                    <div key={index} className="flex items-center gap-4">
-                      <div className="w-16 text-sm font-medium">{week.week}</div>
-                      <div className="flex-1"><Progress value={(week.completed / week.total) * 100} className="h-2" /></div>
-                      <div className="text-sm text-muted-foreground">{week.completed}/{week.total}</div>
+                  {upcomingMissions.map((mission) => (
+                    <div key={mission.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Leaf className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{mission.title}</h4>
+                        <p className="text-sm text-muted-foreground">{mission.description}</p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <Badge variant="secondary">{mission.difficulty}</Badge>
+                          <span className="text-sm text-muted-foreground">
+                            {mission.xpReward} XP • {mission.pointsReward} points
+                          </span>
+                        </div>
+                        <div className="mt-2">
+                          <Progress value={mission.progress} className="h-2" />
+                        </div>
+                      </div>
+                      <Button size="sm">
+                        Continue
+                      </Button>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Recent Activities */}
+            {/* Recent Blog Posts */}
             <Card>
               <CardHeader>
-                <CardTitle>Recent Activities</CardTitle>
-                <CardDescription>Your latest farming achievements</CardDescription>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                    Latest Blog Posts
+                  </CardTitle>
+                  <Link href="/blog">
+                    <Button variant="outline" size="sm">
+                      View All
+                      <ArrowRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-green-500 rounded-full" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Completed Composting Workshop</p>
-                      <p className="text-xs text-muted-foreground">2 days ago</p>
+                  {recentBlogPosts.map((post) => (
+                    <div key={post.id} className="flex items-center gap-4 p-4 border rounded-lg hover:shadow-sm transition-shadow">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium">{post.title}</h4>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
+                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                          <span>By {post.author}</span>
+                          <span>•</span>
+                          <span>{post.readTime} min read</span>
+                          <span>•</span>
+                          <span>{post.views} views</span>
+                        </div>
+                      </div>
+                      <Link href={`/blog/${post.id}`}>
+                        <Button variant="outline" size="sm">
+                          Read
+                        </Button>
+                      </Link>
                     </div>
-                    <Badge variant="outline" className="text-xs">+100 pts</Badge>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Started Mulching Challenge</p>
-                      <p className="text-xs text-muted-foreground">1 week ago</p>
-                    </div>
-                    <Badge variant="outline" className="text-xs">Active</Badge>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Earned Soil Health Champion badge</p>
-                      <p className="text-xs text-muted-foreground">2 weeks ago</p>
-                    </div>
-                    <Badge variant="outline" className="text-xs">Achievement</Badge>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Achievements */}
+          {/* Right Column */}
+          <div className="space-y-8">
+            {/* Weather Widget */}
+            <WeatherWidget />
+
+            {/* Crop Calculator */}
+            <CropCalculator />
+
+            {/* Notifications */}
+            <NotificationCenter />
+
+            {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Achievements</CardTitle>
-                <CardDescription>Your farming badges</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  {achievements.map((achievement, index) => {
-                    const Icon = achievement.icon
-                    return (
-                      <div key={index} className={`flex flex-col items-center p-3 rounded-lg border ${achievement.earned ? "bg-muted/50 border-primary/20" : "bg-muted/20 border-muted opacity-50"}`}>
-                        <Icon className={`h-6 w-6 mb-2 ${achievement.color}`} />
-                        <p className="text-xs text-center font-medium">{achievement.name}</p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-            {/* Next Recommendations */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recommended Next</CardTitle>
-                <CardDescription>Based on your progress</CardDescription>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Quick Actions
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="p-3 rounded-lg border bg-muted/30">
-                  <h4 className="font-medium text-sm mb-1">Water Conservation Methods</h4>
-                  <p className="text-xs text-muted-foreground mb-2">Perfect follow-up to your mulching work</p>
-                  <Button size="sm" className="w-full">Start Mission</Button>
-                </div>
-                <div className="p-3 rounded-lg border bg-muted/30">
-                  <h4 className="font-medium text-sm mb-1">Join Local Community</h4>
-                  <p className="text-xs text-muted-foreground mb-2">Connect with 23 farmers in your area</p>
-                  <Button size="sm" variant="outline" className="w-full bg-transparent">Explore</Button>
-                </div>
-              </CardContent>
-            </Card>
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Impact Summary</CardTitle>
-                <CardDescription>Your contribution to sustainability</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between"><span className="text-sm">Water Saved</span><span className="text-sm font-medium">2,400L</span></div>
-                <div className="flex justify-between"><span className="text-sm">Soil Improved</span><span className="text-sm font-medium">1.5 hectares</span></div>
-                <div className="flex justify-between"><span className="text-sm">CO₂ Reduced</span><span className="text-sm font-medium">450kg</span></div>
-                <div className="flex justify-between"><span className="text-sm">Farmers Helped</span><span className="text-sm font-medium">8</span></div>
+                <Link href="/missions">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Target className="mr-2 h-4 w-4" />
+                    Start New Mission
+                  </Button>
+                </Link>
+                <Link href="/marketplace">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Package className="mr-2 h-4 w-4" />
+                    Browse Marketplace
+                  </Button>
+                </Link>
+                <Link href="/community">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Users className="mr-2 h-4 w-4" />
+                    Join Community
+                  </Button>
+                </Link>
+                <Link href="/support">
+                  <Button variant="outline" className="w-full justify-start">
+                    <Droplets className="mr-2 h-4 w-4" />
+                    Get AI Support
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           </div>

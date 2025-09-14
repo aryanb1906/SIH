@@ -11,9 +11,31 @@ import { ThemeProvider } from "next-themes"
 import { Suspense } from "react"
 
 export const metadata: Metadata = {
-  title: "FarmGrow",
-  description: "Created with FarmGrow",
+  title: "FarmGrow - Sustainable Farming Platform",
+  description: "Empowering farmers with sustainable practices through gamified learning, community support, and AI assistance.",
   generator: "FarmGrow",
+  manifest: "/manifest.json",
+  themeColor: "#d97706",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "FarmGrow"
+  },
+  formatDetection: {
+    telephone: false
+  },
+  openGraph: {
+    type: "website",
+    siteName: "FarmGrow",
+    title: "FarmGrow - Sustainable Farming Platform",
+    description: "Empowering farmers with sustainable practices through gamified learning, community support, and AI assistance."
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FarmGrow - Sustainable Farming Platform",
+    description: "Empowering farmers with sustainable practices through gamified learning, community support, and AI assistance."
+  }
 }
 
 export default function RootLayout({
@@ -37,6 +59,23 @@ export default function RootLayout({
           </ThemeProvider>
         </Suspense>
         <Analytics />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                      console.log('SW registration failed: ', registrationError);
+                    });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   )

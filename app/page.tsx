@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Container } from "@/components/container"
-import { Leaf, Users, Trophy, BookOpen, Star, Droplets, Sprout, Bug, RotateCcw, Sun, Calendar, Clock, ArrowRight } from "lucide-react"
+import { Leaf, Users, Trophy, BookOpen, Star, Droplets, Sprout, Bug, RotateCcw, Sun, Calendar, Clock, ArrowRight, Package, Calculator, Bell } from "lucide-react"
 import Link from "next/link"
 
 export default function HomePage() {
@@ -25,6 +25,12 @@ export default function HomePage() {
               </Link>
               <Link href="/rewards" className="text-foreground hover:text-primary transition-colors">
                 Rewards
+              </Link>
+              <Link href="/marketplace" className="text-foreground hover:text-primary transition-colors">
+                Marketplace
+              </Link>
+              <Link href="/blog" className="text-foreground hover:text-primary transition-colors">
+                Blog
               </Link>
               <Link href="/support" className="text-foreground hover:text-primary transition-colors">
                 Support
@@ -516,6 +522,114 @@ export default function HomePage() {
         </Container>
       </section>
 
+      {/* Tools Section */}
+      <section className="py-20 px-4">
+        <Container>
+          <div className="text-center mb-16">
+            <h3 className="text-3xl font-bold mb-4">Farming Tools & Resources</h3>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Access essential tools and resources to make informed farming decisions and maximize your productivity.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Weather Widget */}
+            <Card className="group hover:shadow-lg transition-all duration-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Droplets className="h-5 w-5 text-blue-600" />
+                  </div>
+                  Weather Forecast
+                </CardTitle>
+                <CardDescription>
+                  Get real-time weather updates and farming recommendations based on current conditions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Sun className="h-8 w-8 text-yellow-500" />
+                      <div>
+                        <div className="text-2xl font-bold">28°C</div>
+                        <div className="text-sm text-muted-foreground">Partly Cloudy</div>
+                      </div>
+                    </div>
+                    <div className="text-right text-sm text-muted-foreground">
+                      <div>Punjab, India</div>
+                      <div>Humidity: 65%</div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                    <div className="flex items-center gap-2 text-green-800">
+                      <span>🌱</span>
+                      <span className="text-sm font-medium">Farming Tip:</span>
+                    </div>
+                    <p className="text-sm text-green-700 mt-1">
+                      Ideal conditions for most farming activities. Good time for planting and soil preparation.
+                    </p>
+                  </div>
+
+                  <Link href="/weather">
+                    <Button variant="outline" className="w-full group">
+                      View Full Forecast
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Crop Calculator */}
+            <Card className="group hover:shadow-lg transition-all duration-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Calculator className="h-5 w-5 text-green-600" />
+                  </div>
+                  Crop Profit Calculator
+                </CardTitle>
+                <CardDescription>
+                  Calculate potential profits for different crops based on your land area and market conditions.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-lg font-bold text-green-600">₹45,000</div>
+                      <div className="text-sm text-muted-foreground">Potential Revenue</div>
+                    </div>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-lg font-bold text-blue-600">₹25,000</div>
+                      <div className="text-sm text-muted-foreground">Estimated Cost</div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center p-3 bg-primary/10 rounded-lg">
+                    <div className="text-xl font-bold text-primary">₹20,000</div>
+                    <div className="text-sm text-muted-foreground">Net Profit (44% margin)</div>
+                  </div>
+
+                  <div className="text-sm text-muted-foreground">
+                    <strong>Example:</strong> 2 acres of Rice cultivation
+                  </div>
+
+                  <Link href="/calculator">
+                    <Button variant="outline" className="w-full group">
+                      Calculate Your Profit
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </Container>
+      </section>
+
       {/* CTA Section */}
       <section className="py-20 px-4">
         <Container className="text-center">
@@ -562,6 +676,16 @@ export default function HomePage() {
                 <li>
                   <Link href="/community" className="hover:text-foreground">
                     Community
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/marketplace" className="hover:text-foreground">
+                    Marketplace
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blog" className="hover:text-foreground">
+                    Blog
                   </Link>
                 </li>
               </ul>

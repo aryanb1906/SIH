@@ -1,454 +1,438 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+"use client"
+
 import { Container } from "@/components/container"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Users, Trophy, MessageCircle, Heart, Share2, Camera, MapPin, TrendingUp, Crown } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useAppStore } from "@/lib/store"
+import { useEffect, useState } from "react"
+import { 
+  Users, 
+  MessageCircle, 
+  Heart, 
+  Share2, 
+  Plus, 
+  Search, 
+  Filter, 
+  TrendingUp,
+  Clock,
+  MapPin,
+  Star,
+  ThumbsUp,
+  Reply
+} from "lucide-react"
 import Link from "next/link"
 
-const leaderboardData = [
-  { rank: 1, name: "Priya Sharma", location: "Karnataka", score: 2450, avatar: "/placeholder.svg?height=40&width=40" },
-  { rank: 2, name: "Raj Kumar", location: "Tamil Nadu", score: 2380, avatar: "/placeholder.svg?height=40&width=40", isCurrentUser: true},
-  { rank: 3, name: "Amit Patel", location: "Gujarat", score: 2290, avatar: "/placeholder.svg?height=40&width=40" },
-  { rank: 4, name: "Sunita Devi", location: "Punjab", score: 2150, avatar: "/placeholder.svg?height=40&width=40" },
-  { rank: 5, name: "Ravi Reddy", location: "Andhra Pradesh", score: 2080, avatar: "/placeholder.svg?height=40&width=40" },
-];
-  // <Container className="py-4">
-
-const communityPosts = [
+const mockCommunityPosts = [
   {
-    id: 1,
-    author: "Priya Sharma",
-    location: "Karnataka",
-    avatar: "/placeholder.svg?height=40&width=40",
-    time: "2 hours ago",
-    content:
-    "Just completed my first week of mulching! The soil moisture retention is already showing improvement. Here's my progress photo.",
-    image: "/mulched-farm-field.jpg",
+    id: "1",
+    title: "Best practices for organic tomato farming in Punjab",
+    content: "I've been growing organic tomatoes for 3 years now and wanted to share some tips that have worked well for me...",
+    author: {
+      id: "1",
+      name: "Rajesh Singh",
+      avatar: "RS",
+      location: "Punjab",
+      level: 8,
+      verified: true
+    },
+    category: "Crop Management",
+    tags: ["tomatoes", "organic", "punjab"],
     likes: 24,
     comments: 8,
-    badge: "Soil Health Champion",
+    createdAt: "2025-09-15T10:30:00Z",
+    isLiked: false,
+    views: 156
   },
   {
-    id: 2,
-    author: "Amit Patel",
-    location: "Gujarat",
-    avatar: "/placeholder.svg?height=40&width=40",
-    time: "5 hours ago",
-    content: "Sharing my drip irrigation setup for fellow farmers. This system has reduced my water usage by 40% while increasing yield. Happy to answer questions!",
+    id: "2",
+    title: "Water conservation techniques that saved me 40% on irrigation costs",
+    content: "After implementing drip irrigation and mulching, I've seen significant savings in water usage and costs...",
+    author: {
+      id: "2",
+      name: "Priya Mehta",
+      avatar: "PM",
+      location: "Maharashtra",
+      level: 6,
+      verified: true
+    },
+    category: "Water Management",
+    tags: ["water conservation", "drip irrigation", "mulching"],
     likes: 31,
     comments: 12,
-    badge: "Water Saver",
+    createdAt: "2025-09-14T15:45:00Z",
+    isLiked: true,
+    views: 203
   },
   {
-    id: 3,
-    author: "Sunita Devi",
-    location: "Punjab",
-    avatar: "/placeholder.svg?height=40&width=40",
-    time: "1 day ago",
-    content: "Bio-pesticide preparation workshop was amazing! Made my own neem oil spray today. The community knowledge sharing is incredible.",
+    id: "3",
+    title: "Government scheme for solar-powered irrigation - anyone applied?",
+    content: "I'm looking into the PM-KUSUM scheme for solar irrigation. Has anyone here applied and can share their experience?",
+    author: {
+      id: "3",
+      name: "Amit Kumar",
+      avatar: "AK",
+      location: "Odisha",
+      level: 4,
+      verified: false
+    },
+    category: "Government Schemes",
+    tags: ["solar", "irrigation", "government scheme", "PM-KUSUM"],
     likes: 18,
-    comments: 6,
-    badge: "Eco Warrior",
-  },
-];
+    comments: 15,
+    createdAt: "2025-09-13T09:20:00Z",
+    isLiked: false,
+    views: 89
+  }
+]
 
 export default function CommunityPage() {
-  return (
+  const { communityPosts, loadCommunityPosts, likePost, addCommunityPost } = useAppStore()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [sortBy, setSortBy] = useState("recent")
+  const [isCreatePostOpen, setIsCreatePostOpen] = useState(false)
+  const [newPost, setNewPost] = useState({
+    title: "",
+    content: "",
+    category: "",
+    tags: ""
+  })
+  const [filteredPosts, setFilteredPosts] = useState(mockCommunityPosts)
 
-      <div className="min-h-screen bg-background">
+  useEffect(() => {
+    loadCommunityPosts()
+  }, [loadCommunityPosts])
+
+  useEffect(() => {
+    let filtered = mockCommunityPosts
+
+    if (searchTerm) {
+      filtered = filtered.filter(post =>
+        post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      )
+    }
+
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(post => post.category === selectedCategory)
+    }
+
+    // Sort posts
+    switch (sortBy) {
+      case "popular":
+        filtered = filtered.sort((a, b) => b.likes - a.likes)
+        break
+      case "recent":
+      default:
+        filtered = filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        break
+    }
+
+    setFilteredPosts(filtered)
+  }, [searchTerm, selectedCategory, sortBy])
+
+  const categories = ["all", ...Array.from(new Set(mockCommunityPosts.map(post => post.category)))]
+
+  const handleCreatePost = () => {
+    if (newPost.title && newPost.content && newPost.category) {
+      const post = {
+        title: newPost.title,
+        content: newPost.content,
+        author: {
+          id: "current-user",
+          name: "Current User",
+          avatar: "CU",
+          location: "India",
+          level: 5,
+          verified: false
+        },
+        category: newPost.category,
+        tags: newPost.tags.split(",").map(tag => tag.trim()).filter(tag => tag),
+        likes: 0,
+        comments: 0,
+        views: 0
+      }
+      
+      addCommunityPost(post)
+      setNewPost({ title: "", content: "", category: "", tags: "" })
+      setIsCreatePostOpen(false)
+    }
+  }
+
+  const handleLikePost = (postId: string) => {
+    likePost(postId)
+  }
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
+    
+    if (diffInHours < 1) return "Just now"
+    if (diffInHours < 24) return `${diffInHours}h ago`
+    const diffInDays = Math.floor(diffInHours / 24)
+    if (diffInDays < 7) return `${diffInDays}d ago`
+    return date.toLocaleDateString()
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted">
+      <Container className="py-10 px-4">
         {/* Header */}
-        <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <Container className="py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Link href="/">
-                  <Button variant="ghost" size="sm">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="p-4 bg-primary/10 rounded-full border border-primary/20">
+              <Users className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+              FarmGrow Community
+            </h1>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Connect with fellow farmers, share experiences, ask questions, and learn from the community.
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="text-center">
+            <CardContent className="p-6">
+              <Users className="h-8 w-8 text-primary mx-auto mb-3" />
+              <div className="text-2xl font-bold">2,847</div>
+              <div className="text-sm text-muted-foreground">Active Members</div>
+            </CardContent>
+          </Card>
+          <Card className="text-center">
+            <CardContent className="p-6">
+              <MessageCircle className="h-8 w-8 text-primary mx-auto mb-3" />
+              <div className="text-2xl font-bold">1,234</div>
+              <div className="text-sm text-muted-foreground">Posts This Month</div>
+            </CardContent>
+          </Card>
+          <Card className="text-center">
+            <CardContent className="p-6">
+              <TrendingUp className="h-8 w-8 text-primary mx-auto mb-3" />
+              <div className="text-2xl font-bold">89%</div>
+              <div className="text-sm text-muted-foreground">Success Rate</div>
+            </CardContent>
+          </Card>
+          <Card className="text-center">
+            <CardContent className="p-6">
+              <Star className="h-8 w-8 text-primary mx-auto mb-3" />
+              <div className="text-2xl font-bold">4.8</div>
+              <div className="text-sm text-muted-foreground">Community Rating</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and Filter */}
+        <div className="mb-8 flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search posts, topics, or farmers..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full md:w-48">
+              <Filter className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category} value={category}>
+                  {category === "all" ? "All Categories" : category}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Most Recent</SelectItem>
+              <SelectItem value="popular">Most Popular</SelectItem>
+            </SelectContent>
+          </Select>
+          <Dialog open={isCreatePostOpen} onOpenChange={setIsCreatePostOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full md:w-auto">
+                <Plus className="mr-2 h-4 w-4" />
+                Create Post
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create New Post</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium">Title</label>
+                  <Input
+                    placeholder="Enter post title..."
+                    value={newPost.title}
+                    onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Category</label>
+                  <Select value={newPost.category} onValueChange={(value) => setNewPost({ ...newPost, category: value })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Crop Management">Crop Management</SelectItem>
+                      <SelectItem value="Water Management">Water Management</SelectItem>
+                      <SelectItem value="Soil Health">Soil Health</SelectItem>
+                      <SelectItem value="Pest Control">Pest Control</SelectItem>
+                      <SelectItem value="Government Schemes">Government Schemes</SelectItem>
+                      <SelectItem value="Market Prices">Market Prices</SelectItem>
+                      <SelectItem value="Technology">Technology</SelectItem>
+                      <SelectItem value="General">General</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Content</label>
+                  <Textarea
+                    placeholder="Share your experience, ask questions, or provide tips..."
+                    value={newPost.content}
+                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                    rows={6}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Tags (comma-separated)</label>
+                  <Input
+                    placeholder="e.g., organic, tomatoes, irrigation"
+                    value={newPost.tags}
+                    onChange={(e) => setNewPost({ ...newPost, tags: e.target.value })}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setIsCreatePostOpen(false)}>
+                    Cancel
                   </Button>
-                </Link>
-                <div className="flex items-center gap-2">
-                  <Users className="h-6 w-6 text-primary" />
-                  <h1 className="text-xl font-bold">Community</h1>
+                  <Button onClick={handleCreatePost}>
+                    Create Post
+                  </Button>
                 </div>
               </div>
-              <Button>
-                <Camera className="h-4 w-4 mr-2" />
-                Share Progress
-              </Button>
-            </div>
-          </Container>
-        </header>
+            </DialogContent>
+          </Dialog>
+        </div>
 
-        <div className="container mx-auto px-4 py-8">
-          {/* Page Header */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-4">Connect with Fellow Farmers</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl">
-              Share your progress, learn from others, and celebrate sustainable farming achievements together.
+        {/* Community Posts */}
+        <div className="space-y-6">
+          {filteredPosts.map((post) => (
+            <Card key={post.id} className="hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      {post.author.avatar}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-lg">{post.title}</h3>
+                      {post.author.verified && (
+                        <Badge variant="secondary" className="text-xs">
+                          Verified
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+                      <span className="font-medium">{post.author.name}</span>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {post.author.location}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Star className="h-3 w-3" />
+                        Level {post.author.level}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatTimeAgo(post.createdAt)}
+                      </div>
+                    </div>
+                    
+                    <p className="text-muted-foreground mb-4 line-clamp-3">
+                      {post.content}
+                    </p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <Badge variant="outline">{post.category}</Badge>
+                      {post.tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-6">
+                        <button
+                          onClick={() => handleLikePost(post.id)}
+                          className={`flex items-center gap-2 text-sm transition-colors ${
+                            post.isLiked ? 'text-red-600' : 'text-muted-foreground hover:text-red-600'
+                          }`}
+                        >
+                          <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-current' : ''}`} />
+                          {post.likes}
+                        </button>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MessageCircle className="h-4 w-4" />
+                          {post.comments}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <TrendingUp className="h-4 w-4" />
+                          {post.views} views
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm">
+                          <Reply className="h-4 w-4 mr-1" />
+                          Reply
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Share2 className="h-4 w-4 mr-1" />
+                          Share
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {filteredPosts.length === 0 && (
+          <div className="text-center py-12">
+            <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No posts found</h3>
+            <p className="text-muted-foreground">
+              Try adjusting your search terms or create a new post to start the conversation.
             </p>
           </div>
-
-          <Tabs defaultValue="feed" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="feed">Community Feed</TabsTrigger>
-              <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
-              <TabsTrigger value="groups">Local Groups</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="feed" className="space-y-6">
-              <div className="grid lg:grid-cols-3 gap-8">
-                {/* Main Feed */}
-                <div className="lg:col-span-2 space-y-6">
-                  {/* Create Post */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-lg">Share Your Progress</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <Textarea placeholder="What sustainable practice are you working on today?" />
-                      <div className="flex items-center justify-between">
-                        <Button variant="outline" size="sm" className="bg-transparent">
-                          <Camera className="h-4 w-4 mr-2" />
-                          Add Photo
-                        </Button>
-                        <Button>Post Update</Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Community Posts */}
-                  {communityPosts.map((post) => (
-                    <Card key={post.id}>
-                      <CardHeader>
-                        <div className="flex items-start gap-3">
-                          <Avatar>
-                            <AvatarImage src={post.avatar || "/placeholder.svg"} />
-                            <AvatarFallback>
-                              {post.author
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">{post.author}</h3>
-                              <Badge variant="outline" className="text-xs">
-                                {post.badge}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                              <MapPin className="h-3 w-3" />
-                              <span>{post.location}</span>
-                              <span>•</span>
-                              <span>{post.time}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <p className="text-sm leading-relaxed">{post.content}</p>
-                        {post.image && (
-                          <div className="rounded-lg overflow-hidden">
-                            <img
-                              src={post.image || "/placeholder.svg"}
-                              alt="Farm progress"
-                              className="w-full h-48 object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex items-center gap-4 pt-2">
-                          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-red-500">
-                            <Heart className="h-4 w-4 mr-1" />
-                            {post.likes}
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-muted-foreground">
-                            <MessageCircle className="h-4 w-4 mr-1" />
-                            {post.comments}
-                          </Button>
-                          <Button variant="ghost" size="sm" className="text-muted-foreground">
-                            <Share2 className="h-4 w-4 mr-1" />
-                            Share
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-6">
-                  {/* Community Stats */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Community Impact</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Active Farmers</span>
-                        <span className="text-sm font-medium">10,247</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Posts This Week</span>
-                        <span className="text-sm font-medium">1,834</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Hectares Improved</span>
-                        <span className="text-sm font-medium">25,680</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Success Stories</span>
-                        <span className="text-sm font-medium">3,421</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Trending Topics */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Trending Topics</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="text-sm">#MulchingChallenge</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="text-sm">#WaterConservation</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="text-sm">#BioPesticides</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="h-4 w-4 text-primary" />
-                        <span className="text-sm">#CropRotation</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Nearby Farmers */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Farmers Near You</CardTitle>
-                      <CardDescription>Connect with local farmers</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback>MK</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">Mohan Kumar</p>
-                          <p className="text-xs text-muted-foreground">2.3 km away</p>
-                        </div>
-                        <Button size="sm" variant="outline" className="bg-transparent">
-                          Connect
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                          <AvatarFallback>LR</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">Lakshmi Rao</p>
-                          <p className="text-xs text-muted-foreground">4.1 km away</p>
-                        </div>
-                        <Button size="sm" variant="outline" className="bg-transparent">
-                          Connect
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="leaderboard" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5 text-primary" />
-                    Top Eco Warriors
-                  </CardTitle>
-                  <CardDescription>Farmers leading the sustainable agriculture movement in your region</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {leaderboardData.map((farmer) => (
-                      <div
-                        key={farmer.rank}
-                        className={`flex items-center gap-4 p-3 rounded-lg ${farmer.isCurrentUser ? "bg-primary/5 border border-primary/20" : "hover:bg-muted/50"
-                          }`}
-                      >
-                        <div className="flex items-center justify-center w-8 h-8">
-                          {farmer.rank === 1 && <Crown className="h-5 w-5 text-yellow-500" />}
-                          {farmer.rank !== 1 && (
-                            <span className="text-sm font-bold text-muted-foreground">#{farmer.rank}</span>
-                          )}
-                        </div>
-                        <Avatar>
-                          <AvatarImage src={farmer.avatar || "/placeholder.svg"} />
-                          <AvatarFallback>
-                            {farmer.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold">{farmer.name}</h3>
-                            {farmer.isCurrentUser && <Badge variant="secondary">You</Badge>}
-                          </div>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <MapPin className="h-3 w-3" />
-                            <span>{farmer.location}</span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-primary">{farmer.score}</div>
-                          <div className="text-xs text-muted-foreground">points</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="groups" className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Tamil Nadu Banana Farmers</CardTitle>
-                    <CardDescription>234 members • Very Active</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Share experiences and best practices for banana cultivation in Tamil Nadu climate.
-                    </p>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="flex -space-x-2">
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">RK</AvatarFallback>
-                        </Avatar>
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">PS</AvatarFallback>
-                        </Avatar>
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">MK</AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <span className="text-xs text-muted-foreground">+231 others</span>
-                    </div>
-                    <Button className="w-full">Join Group</Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Organic Farming Enthusiasts</CardTitle>
-                    <CardDescription>567 members • Active</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Learn and share organic farming techniques, from composting to natural pest control.
-                    </p>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="flex -space-x-2">
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">AP</AvatarFallback>
-                        </Avatar>
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">SD</AvatarFallback>
-                        </Avatar>
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">LR</AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <span className="text-xs text-muted-foreground">+564 others</span>
-                    </div>
-                    <Button variant="outline" className="w-full bg-transparent">
-                      Join Group
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Water Conservation Network</CardTitle>
-                    <CardDescription>189 members • Growing</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Focus on water-saving techniques, drip irrigation, and rainwater harvesting methods.
-                    </p>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="flex -space-x-2">
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">RR</AvatarFallback>
-                        </Avatar>
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">VK</AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <span className="text-xs text-muted-foreground">+187 others</span>
-                    </div>
-                    <Button variant="outline" className="w-full bg-transparent">
-                      Join Group
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Young Farmers Initiative</CardTitle>
-                    <CardDescription>423 members • Very Active</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Next-generation farmers embracing technology and sustainable practices.
-                    </p>
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="flex -space-x-2">
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">NK</AvatarFallback>
-                        </Avatar>
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">AS</AvatarFallback>
-                        </Avatar>
-                        <Avatar className="h-6 w-6 border-2 border-background">
-                          <AvatarImage src="/placeholder.svg?height=24&width=24" />
-                          <AvatarFallback className="text-xs">PM</AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <span className="text-xs text-muted-foreground">+420 others</span>
-                    </div>
-                    <Button className="w-full">Join Group</Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-      )
+        )}
+      </Container>
+    </div>
+  )
 }

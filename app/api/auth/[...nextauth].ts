@@ -1,8 +1,8 @@
-import NextAuth from "next-auth"
+import NextAuth, { type AuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import EmailProvider from "next-auth/providers/email"
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -13,7 +13,7 @@ export const authOptions = {
             from: process.env.EMAIL_FROM || "",
         }),
     ],
-    session: { strategy: "jwt" },
+    session: { strategy: "jwt" as const },
     pages: {
         signIn: "/signin",
     },
