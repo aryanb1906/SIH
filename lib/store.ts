@@ -122,68 +122,69 @@ interface AppState {
   // User state
   user: User | null
   isAuthenticated: boolean
-  
+
   // Missions state
   missions: Mission[]
   completedMissions: string[]
   currentMission: Mission | null
-  
+
   // Blog state
   blogPosts: BlogPost[]
   featuredPosts: BlogPost[]
-  
+
   // Notifications
   notifications: Notification[]
   unreadCount: number
-  
+
   // Weather
   weather: WeatherData | null
-  
+
   // Community
   communityPosts: CommunityPost[]
-  
+
   // Marketplace
   marketplaceItems: MarketplaceItem[]
   cart: MarketplaceItem[]
-  
+
   // UI state
   sidebarOpen: boolean
   theme: 'light' | 'dark' | 'system'
-  
+
   // Actions
   setUser: (user: User | null) => void
   updateUserXP: (xp: number) => void
   updateUserPoints: (points: number) => void
-  
+
   // Mission actions
   loadMissions: () => void
   startMission: (missionId: string) => void
   completeMissionStep: (missionId: string, stepId: string) => void
   completeMission: (missionId: string) => void
-  
+
   // Blog actions
   loadBlogPosts: () => void
   incrementBlogViews: (postId: string) => void
-  
+  likeBlogPost: (postId: string) => void
+
   // Notification actions
   addNotification: (notification: Omit<Notification, 'id' | 'createdAt'>) => void
   markNotificationAsRead: (notificationId: string) => void
   clearAllNotifications: () => void
-  
+
   // Weather actions
   setWeather: (weather: WeatherData) => void
-  
+
   // Community actions
   loadCommunityPosts: () => void
   likePost: (postId: string) => void
   addCommunityPost: (post: Omit<CommunityPost, 'id' | 'createdAt' | 'isLiked'>) => void
-  
+
   // Marketplace actions
   loadMarketplaceItems: () => void
   addToCart: (item: MarketplaceItem) => void
   removeFromCart: (itemId: string) => void
   clearCart: () => void
-  
+
   // UI actions
   setSidebarOpen: (open: boolean) => void
   setTheme: (theme: 'light' | 'dark' | 'system') => void
@@ -380,7 +381,7 @@ export const useAppStore = create<AppState>()(
         set((state) => ({
           missions: state.missions.map(mission => {
             if (mission.id === missionId) {
-              const updatedSteps = mission.steps.map(step => 
+              const updatedSteps = mission.steps.map(step =>
                 step.id === stepId ? { ...step, isCompleted: true } : step
               )
               const completedSteps = updatedSteps.filter(step => step.isCompleted).length
@@ -396,16 +397,16 @@ export const useAppStore = create<AppState>()(
         if (mission) {
           set((state) => ({
             completedMissions: [...state.completedMissions, missionId],
-            missions: state.missions.map(m => 
+            missions: state.missions.map(m =>
               m.id === missionId ? { ...m, isCompleted: true, progress: 100 } : m
             ),
             currentMission: state.currentMission?.id === missionId ? null : state.currentMission
           }))
-          
+
           // Award XP and points
           get().updateUserXP(mission.xpReward)
           get().updateUserPoints(mission.pointsReward)
-          
+
           // Add notification
           get().addNotification({
             title: 'Mission Completed!',
@@ -421,8 +422,15 @@ export const useAppStore = create<AppState>()(
       loadBlogPosts: () => set({ blogPosts: generateMockBlogPosts(), featuredPosts: generateMockBlogPosts().slice(0, 3) }),
       incrementBlogViews: (postId) => {
         set((state) => ({
-          blogPosts: state.blogPosts.map(post => 
+          blogPosts: state.blogPosts.map(post =>
             post.id === postId ? { ...post, views: post.views + 1 } : post
+          )
+        }))
+      },
+      likeBlogPost: (postId) => {
+        set((state) => ({
+          blogPosts: state.blogPosts.map(post =>
+            post.id === postId ? { ...post, likes: post.likes + 1 } : post
           )
         }))
       },
@@ -442,7 +450,7 @@ export const useAppStore = create<AppState>()(
       markNotificationAsRead: (notificationId) => {
         set((state) => ({
           notifications: state.notifications.map(notification =>
-            notification.id === notificationId 
+            notification.id === notificationId
               ? { ...notification, isRead: true }
               : notification
           ),
@@ -459,7 +467,7 @@ export const useAppStore = create<AppState>()(
       likePost: (postId) => {
         set((state) => ({
           communityPosts: state.communityPosts.map(post =>
-            post.id === postId 
+            post.id === postId
               ? { ...post, likes: post.isLiked ? post.likes - 1 : post.likes + 1, isLiked: !post.isLiked }
               : post
           )
