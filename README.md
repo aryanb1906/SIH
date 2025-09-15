@@ -29,6 +29,9 @@ FarmGrow motivates farmers to adopt eco-friendly agricultural techniques via str
 | AI Support | Context‑aware Gemini assistant for agronomy queries. |
 | Authentication | Google OAuth (email provider optional). |
 | Gamification | Badges, XP, streaks (extensible). |
+| Quiz | Timed quiz with levels, categories, badges, local progress persistence, sounds & animations. |
+| Leaderboard | Local (device) ranking of quiz scores with level & badge snapshot. |
+| Feedback | In‑app feedback / bug report form (stored locally in browser for MVP). |
 
 ---
 
@@ -83,6 +86,35 @@ Data is mock/static. Future persistence (PostgreSQL + Prisma or Supabase) can in
 3. System prompt constrains output (farming only, plain text)
 4. Gemini returns answer → JSON `{ message }`
 5. UI renders plain text (no markdown parsing)
+
+---
+
+## Feedback & Bug Reporting (MVP)
+The dashboard now includes a `FeedbackForm` component (`components/feedback-form.tsx`). Submissions are:
+- Stored locally in `localStorage` under the key `feedbackItems`
+- Categorized as `feature` or `bug`
+- Timestamped and listed in a scrollable panel below the form
+
+Future server enhancement ideas:
+- Persist to a database + admin triage UI
+- Add email / webhook notifications
+- Auto-attach client meta (browser, viewport, user id)
+
+## Quiz Leaderboard (Local)
+`/leaderboard` page reads `quizScores` from `localStorage` and displays the top 50 entries sorted by points.
+Each entry: name, points, level, badges (first token for compactness).
+
+Current limitations:
+- Scores are device‑local (not shared across users)
+- No anti-cheat measures
+
+Upgrade path:
+1. Add server API (POST /api/quiz/score) with auth
+2. Store in relational DB (Postgres/Supabase) with unique user ID
+3. Add seasonal resets + pagination + filters (region / level)
+4. Add signed submission tokens to prevent tampering
+
+---
 
 ---
 

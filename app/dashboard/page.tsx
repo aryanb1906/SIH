@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useAppStore } from "@/lib/store"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import {
   Trophy, Target, BookOpen, Users, Package, Bell, TrendingUp,
   Calendar, Star, ArrowRight, Leaf, Droplets, Calculator, Award, ArrowLeft
@@ -16,6 +16,7 @@ import Link from "next/link"
 import WeatherWidget from "@/components/weather-widget"
 import CropCalculator from "@/components/crop-calculator"
 import NotificationCenter from "@/components/notification-center"
+import FeedbackForm from "@/components/feedback-form"
 
 // Achievements mock (from code base one)
 // Removed duplicate header/navbar block that was disturbing dashboard layout.
@@ -412,6 +413,13 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Feedback Section */}
+        <div className="mt-20" id="feedback">
+          <h2 className="text-2xl font-bold mb-4">Feedback & Improvements</h2>
+          <p className="text-sm text-muted-foreground mb-6">Share a feature idea or report an issue below. (Stored locally for now.)</p>
+          <FeedbackForm />
         </div>
       </Container>
     </div>
