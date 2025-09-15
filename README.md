@@ -211,15 +211,29 @@ lib/, hooks/         # Utilities & custom hooks
 
 ## 🌟 Recent Improvements
 
-- Interactive Missions: start, progress, complete missions; progress bar and points; recommendations and search/filter; persistent state in localStorage
-- Added Crop Profit Calculator with advanced options and ROI
-- Added Weather Forecast page with live data and improved UI
-- Blog system: persistent posts, write/view, front page sync
-- Demo sign-in flow and persistent demo user
-- Consistent Back button navigation on all pages
-- Modernized UI and improved accessibility
-- Fixed build errors and improved client/server component handling
-- Integrated Google Gemini API for AI chatbot
+- Interactive Missions: start, progress, complete missions; progress bar and points; recommendations and search/filter; persistent state in `localStorage`.
+- Crop Profit Calculator: advanced options & ROI calculations.
+- Weather Forecast: live city-based weather with improved UI.
+- Blog System Enhancements:
+   - Persistent posts (demo seed + user created)
+   - Write / Edit / Delete workflow with validation
+   - View counting (increments when opening a post)
+   - Like button on list cards (local state & persistence)
+   - Tag & Category filter chips + search bar (title/excerpt/tags)
+   - Inline "Write Blog" button always visible
+- Single Global Navbar: removed old duplicate secondary bar for cleaner layout.
+- Quiz Landing Screen: added interactive start screen before questions (foundation for progress persistence & leaderboard sync).
+- Demo sign-in flow and persistent demo user.
+- Consistent Back button navigation on all pages.
+- Modernized UI and improved accessibility.
+- Fixed build errors and improved client/server component handling.
+- Integrated Google Gemini API for AI chatbot.
+
+### ⏳ In Progress / Upcoming
+- Quiz persistent progress (store level, XP, badges in `localStorage`).
+- Leaderboard sync with real-time quiz progress.
+- Mission progress fine-grained updates (partial progress adjustments).
+- Structured backend persistence (planned: Postgres + Prisma or Supabase).
 
 ## ⚡ Environment Variables
 
