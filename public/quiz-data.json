@@ -1,0 +1,105 @@
+[
+    {
+        "id": "q1",
+        "type": "mcq",
+        "level": "Beginner",
+        "question": "Which of these is an organic fertilizer?",
+        "image": "/organic-fertilizer-bag.png",
+        "options": [
+            "Urea",
+            "Compost",
+            "DAP",
+            "Potash"
+        ],
+        "answer": 1,
+        "explanation": "Compost is made from natural materials and is organic.",
+        "tags": [
+            "fertilizer",
+            "organic"
+        ],
+        "crop": "general",
+        "audio": null
+    },
+    {
+        "id": "q2",
+        "type": "truefalse",
+        "level": "Beginner",
+        "question": "Drip irrigation helps save water.",
+        "image": "/drip-irrigation.png",
+        "options": [
+            "True",
+            "False"
+        ],
+        "answer": 0,
+        "explanation": "Drip irrigation delivers water directly to roots, reducing waste.",
+        "tags": [
+            "irrigation",
+            "water"
+        ],
+        "crop": "paddy",
+        "audio": null
+    },
+    {
+        "id": "q3",
+        "type": "scenario",
+        "level": "Skilled",
+        "question": "A farmer notices soil erosion on his field. What should he do?",
+        "image": null,
+        "options": [
+            "Apply more fertilizer",
+            "Practice contour farming",
+            "Increase irrigation",
+            "Use chemical pesticides"
+        ],
+        "answer": 1,
+        "explanation": "Contour farming helps prevent soil erosion by following the land's natural shape.",
+        "tags": [
+            "soil",
+            "erosion"
+        ],
+        "crop": "general",
+        "audio": null
+    },
+    {
+        "id": "q4",
+        "type": "dragdrop",
+        "level": "Expert",
+        "question": "Drag and drop the correct farming tool to its use.",
+        "image": null,
+        "options": [
+            {
+                "tool": "Hoe",
+                "use": "Weeding"
+            },
+            {
+                "tool": "Sprayer",
+                "use": "Pesticide application"
+            },
+            {
+                "tool": "Sickle",
+                "use": "Harvesting"
+            }
+        ],
+        "answer": [
+            {
+                "tool": "Hoe",
+                "use": "Weeding"
+            },
+            {
+                "tool": "Sprayer",
+                "use": "Pesticide application"
+            },
+            {
+                "tool": "Sickle",
+                "use": "Harvesting"
+            }
+        ],
+        "explanation": "Each tool matches its specific use in farming.",
+        "tags": [
+            "tools",
+            "farming"
+        ],
+        "crop": "general",
+        "audio": null
+    }
+]

@@ -5,32 +5,44 @@
 
 :root {
   /* Added missing spacing variable */
-  --spacing: 0.25rem; /* Base spacing unit (4px) */
+  --spacing: 0.25rem;
+  /* Base spacing unit (4px) */
   /* Updated color palette for farming theme with earth tones and nature colors */
-  --background: oklch(1 0 0); /* Pure white background */
-  --foreground: oklch(0.35 0 0); /* Dark gray text */
-  --card: oklch(0.98 0.02 85); /* Soft cream for cards */
+  --background: oklch(1 0 0);
+  /* Pure white background */
+  --foreground: oklch(0.35 0 0);
+  /* Dark gray text */
+  --card: oklch(0.98 0.02 85);
+  /* Soft cream for cards */
   --card-foreground: oklch(0.35 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.35 0 0);
-  --primary: oklch(0.55 0.15 85); /* Warm yellow-brown for primary actions */
+  --primary: oklch(0.55 0.15 85);
+  /* Warm yellow-brown for primary actions */
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.65 0.25 330); /* Vibrant pink for gamified elements */
+  --secondary: oklch(0.65 0.25 330);
+  /* Vibrant pink for gamified elements */
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.98 0.02 85);
   --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.65 0.25 330); /* Pink accent for rewards */
+  --accent: oklch(0.65 0.25 330);
+  /* Pink accent for rewards */
   --accent-foreground: oklch(1 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.9 0 0);
   --input: oklch(0.98 0.02 85);
   --ring: oklch(0.55 0.15 85 / 0.5);
-  --chart-1: oklch(0.55 0.15 85); /* Primary farming color */
-  --chart-2: oklch(0.65 0.25 330); /* Accent pink */
-  --chart-3: oklch(0.45 0.1 120); /* Green for growth */
-  --chart-4: oklch(0.6 0.2 60); /* Golden yellow */
-  --chart-5: oklch(0.4 0.1 200); /* Blue for water */
+  --chart-1: oklch(0.55 0.15 85);
+  /* Primary farming color */
+  --chart-2: oklch(0.65 0.25 330);
+  /* Accent pink */
+  --chart-3: oklch(0.45 0.1 120);
+  /* Green for growth */
+  --chart-4: oklch(0.6 0.2 60);
+  /* Golden yellow */
+  --chart-5: oklch(0.4 0.1 200);
+  /* Blue for water */
   --radius: 0.5rem;
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.35 0 0);
@@ -122,7 +134,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
+    /* Fallback colors for browsers that don't yet support oklch() (otherwise may default to black) */
+    background-color: #ffffff;
+    /* fallback */
+    color: #222222;
+    /* fallback */
     @apply bg-background text-foreground;
   }
 }

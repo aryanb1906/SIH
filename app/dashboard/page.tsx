@@ -18,13 +18,7 @@ import CropCalculator from "@/components/crop-calculator"
 import NotificationCenter from "@/components/notification-center"
 
 // Achievements mock (from code base one)
-const achievements = [
-  { name: "Soil Health Champion", icon: Leaf, color: "text-green-600", earned: true },
-  { name: "Water Saver", icon: Droplets, color: "text-blue-600", earned: true },
-  { name: "Eco Warrior", icon: Leaf, color: "text-primary", earned: true },
-  { name: "Community Leader", icon: Users, color: "text-secondary", earned: false },
-  { name: "Master Farmer", icon: Award, color: "text-yellow-600", earned: false },
-]
+// Removed duplicate header/navbar block that was disturbing dashboard layout.
 
 export default function DashboardPage() {
   // Back button at the top

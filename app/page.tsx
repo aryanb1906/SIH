@@ -18,77 +18,64 @@ export default function HomePage() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
-        if (Array.isArray(parsed)) setBlogPosts(parsed)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setBlogPosts(parsed)
+          return
+        }
       } catch { }
     }
+    // If no posts, add 3 demo posts
+    const demoPosts = [
+      {
+        id: "demo-1",
+        title: "How Mulching Boosts Yields",
+        excerpt: "Discover how simple mulching techniques can increase your farm's productivity.",
+        content: "Mulching helps retain soil moisture, suppress weeds, and improve soil health. Try using organic materials like straw or leaves.",
+        author: "Rajesh Singh",
+        publishedAt: new Date().toISOString(),
+        readTime: 3,
+        category: "Sustainability",
+        tags: ["mulching", "soil", "yield"],
+        views: 0,
+        likes: 0,
+      },
+      {
+        id: "demo-2",
+        title: "Bio-Pesticides: Safer Pest Control",
+        excerpt: "Learn about natural alternatives to chemical pesticides for healthier crops.",
+        content: "Bio-pesticides are derived from natural materials and are safer for the environment. Neem oil and Bacillus thuringiensis are popular choices.",
+        author: "Priya Mehta",
+        publishedAt: new Date().toISOString(),
+        readTime: 4,
+        category: "Organic Farming",
+        tags: ["bio-pesticide", "organic", "pest control"],
+        views: 0,
+        likes: 0,
+      },
+      {
+        id: "demo-3",
+        title: "Water Conservation Tips",
+        excerpt: "Simple ways to save water and improve farm sustainability.",
+        content: "Drip irrigation, rainwater harvesting, and mulching are effective water-saving techniques every farmer should try.",
+        author: "Amit Kumar",
+        publishedAt: new Date().toISOString(),
+        readTime: 2,
+        category: "Water Management",
+        tags: ["water", "conservation", "irrigation"],
+        views: 0,
+        likes: 0,
+      },
+    ]
+    setBlogPosts(demoPosts)
+    localStorage.setItem("blogPosts", JSON.stringify(demoPosts))
   }, [])
 
-  const handleWriteBlog = () => setShowModal(true)
-  const handleCloseModal = () => setShowModal(false)
-  const handleChange = (e: any) => setForm({ ...form, [e.target.name]: e.target.value })
-  const handleSubmitBlog = (e: any) => {
-    e.preventDefault()
-    const newPost = {
-      id: Date.now().toString(),
-      title: form.title,
-      excerpt: form.excerpt,
-      content: form.content,
-      author: form.author || "Anonymous",
-      publishedAt: new Date().toISOString(),
-      readTime: Math.max(3, Math.round(form.content.length / 600)),
-      category: form.category,
-      tags: form.tags.split(",").map((t: string) => t.trim()),
-      views: 0,
-      likes: 0,
-    }
-    const updated = [newPost, ...blogPosts]
-    setBlogPosts(updated)
-    localStorage.setItem("blogPosts", JSON.stringify(updated))
-    setShowModal(false)
-    setForm({ title: "", excerpt: "", content: "", author: "", category: "General", tags: "" })
-  }
+  // Remove modal logic from homepage; blog input will be handled on /blog page
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <Container className="py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Leaf className="h-8 w-8 text-primary" />
-              <h1 className="text-2xl font-bold text-primary">FarmGrow</h1>
-            </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/missions" className="text-foreground hover:text-primary transition-colors">
-                Missions
-              </Link>
-              <Link href="/community" className="text-foreground hover:text-primary transition-colors">
-                Community
-              </Link>
-              <Link href="/rewards" className="text-foreground hover:text-primary transition-colors">
-                Rewards
-              </Link>
-              <Link href="/marketplace" className="text-foreground hover:text-primary transition-colors">
-                Marketplace
-              </Link>
-              <Link href="/blog" className="text-foreground hover:text-primary transition-colors">
-                Blog
-              </Link>
-              <Link href="/support" className="text-foreground hover:text-primary transition-colors">
-                Support
-              </Link>
-              <Link href="/faq" className="text-foreground hover:text-primary transition-colors">
-                FAQ
-              </Link>
-              <a href="/api/auth/signin">
-                <Button variant="outline">Sign In</Button>
-              </a>
-            </nav>
-          </div>
-        </Container>
-      </header>
-
       {/* Hero Section */}
-      <section className="py-20 px-4">
+      {/* Added pt adjustment because global sticky header already occupies vertical space */}
+      <section className="pt-24 md:pt-32 pb-20 px-4">
         <Container className="text-center">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-4xl md:text-6xl font-bold text-balance mb-6">
@@ -374,7 +361,7 @@ export default function HomePage() {
             {blogPosts.length === 0 ? (
               <p className="text-muted-foreground">No blog posts found.</p>
             ) : (
-              blogPosts.slice(0, 6).map(post => (
+              blogPosts.slice(0, 3).map(post => (
                 <Link key={post.id} href={`/blog/${post.id}`}>
                   <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer">
                     <CardHeader className="pb-4">
@@ -416,31 +403,12 @@ export default function HomePage() {
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <Button variant="secondary" size="lg" onClick={handleWriteBlog}>
-              Write Blog
-            </Button>
+            <Link href="/blog">
+              <Button variant="secondary" size="lg">
+                Write Blog
+              </Button>
+            </Link>
           </div>
-
-          {/* Write Blog Modal */}
-          {showModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg">
-                <h2 className="text-2xl font-bold mb-4">Write a New Blog Post</h2>
-                <form onSubmit={handleSubmitBlog} className="space-y-4">
-                  <input name="title" value={form.title} onChange={handleChange} required placeholder="Title" className="w-full border rounded px-3 py-2" />
-                  <input name="excerpt" value={form.excerpt} onChange={handleChange} required placeholder="Short Excerpt" className="w-full border rounded px-3 py-2" />
-                  <textarea name="content" value={form.content} onChange={handleChange} required placeholder="Content" className="w-full border rounded px-3 py-2 min-h-[100px]" />
-                  <input name="author" value={form.author} onChange={handleChange} placeholder="Author Name" className="w-full border rounded px-3 py-2" />
-                  <input name="category" value={form.category} onChange={handleChange} placeholder="Category" className="w-full border rounded px-3 py-2" />
-                  <input name="tags" value={form.tags} onChange={handleChange} placeholder="Tags (comma separated)" className="w-full border rounded px-3 py-2" />
-                  <div className="flex gap-2 justify-end">
-                    <Button type="button" variant="outline" onClick={handleCloseModal}>Cancel</Button>
-                    <Button type="submit" variant="default">Submit</Button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
         </Container>
       </section>
 

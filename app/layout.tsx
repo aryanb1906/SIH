@@ -53,32 +53,60 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-      <body>
+      <body className="min-h-screen bg-background text-foreground">
         <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 bg-primary text-primary-foreground px-3 py-2 rounded">Skip to main</a>
-        <header className="w-full bg-black">
-          <Container className="flex justify-end items-center gap-4 py-4">
-            <SessionHeader />
-          </Container>
-        </header>
-        <Suspense fallback={<div>Loading...</div>}>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-            <main id="main-content">{children}</main>
-            <AIChatWidget />
-          </ThemeProvider>
-        </Suspense>
+        <SessionProviderWrapper>
+          <header className="w-full bg-background border-b sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/95">
+            <Container className="flex items-center justify-between py-4">
+              {/* Left: Logo */}
+              <div className="flex items-center gap-2 min-w-[160px]">
+                <Leaf className="h-8 w-8 text-primary" />
+                <Link href="/" className="text-2xl font-bold text-primary">FarmGrow</Link>
+              </div>
+              {/* Center: Nav Links */}
+              <nav className="hidden md:flex flex-1 justify-center items-center gap-6">
+                <Link href="/missions" className="text-foreground hover:text-primary transition-colors">Missions</Link>
+                <Link href="/community" className="text-foreground hover:text-primary transition-colors">Community</Link>
+                <Link href="/rewards" className="text-foreground hover:text-primary transition-colors">Rewards</Link>
+                <Link href="/quiz" className="text-foreground hover:text-primary transition-colors">Quiz</Link>
+                <Link href="/marketplace" className="text-foreground hover:text-primary transition-colors">Marketplace</Link>
+                <Link href="/blog" className="text-foreground hover:text-primary transition-colors">Blog</Link>
+                <Link href="/support" className="text-foreground hover:text-primary transition-colors">Support</Link>
+                <Link href="/faq" className="text-foreground hover:text-primary transition-colors">FAQ</Link>
+              </nav>
+              {/* Right: User Section & Demo Button */}
+              <div className="flex items-center gap-4 min-w-[220px] justify-end">
+                {/* Responsive mobile menu */}
+                <MobileNav />
+                {/* User Section */}
+                <SessionHeader />
+                {/* Always show Try Demo */}
+                <Link href="/signin">
+                  <Button variant="outline">Try Demo</Button>
+                </Link>
+              </div>
+            </Container>
+            {/* Removed secondary mobile nav (duplication) - MobileNav component handles mobile links */}
+          </header>
+          <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+            <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
+              <main id="main-content" className="min-h-screen">
+                {children}
+              </main>
+              <AIChatWidget />
+              <Toaster />
+            </ThemeProvider>
+          </Suspense>
+        </SessionProviderWrapper>
         <Analytics />
-        <script 
+        <script
           dangerouslySetInnerHTML={{
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                      console.log('SW registered: ', registration);
-                    })
-                    .catch(function(registrationError) {
-                      console.log('SW registration failed: ', registrationError);
-                    });
+                    .then(function(registration) { console.log('SW registered: ', registration); })
+                    .catch(function(err) { console.log('SW registration failed: ', err); });
                 });
               }
             `,
@@ -90,69 +118,5 @@ export default function RootLayout({
 }
 
 
-// bottom should be merged with upper export
-// export default function RootLayout({
-//   children,
-// }: {
-//   children: React.ReactNode
-// }) {
-//   return (
-//     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-//       <body>
-//         <SessionProviderWrapper>
-//           <header className="w-full bg-background border-b sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:bg-background/95">
-//             <Container className="flex justify-between items-center gap-4 py-4">
-//               <div className="flex items-center gap-2">
-//                 <Leaf className="h-8 w-8 text-primary" />
-//                 <Link href="/" className="text-2xl font-bold text-primary">
-//                   FarmGrow
-//                 </Link>
-//               </div>
-
-//               <nav className="hidden md:flex items-center gap-6">
-//                 <Link href="/missions" className="text-foreground hover:text-primary transition-colors">
-//                   Missions
-//                 </Link>
-//                 <Link href="/community" className="text-foreground hover:text-primary transition-colors">
-//                   Community
-//                 </Link>
-//                 <Link href="/rewards" className="text-foreground hover:text-primary transition-colors">
-//                   Rewards
-//                 </Link>
-//                 <Link href="/quiz" className="text-foreground hover:text-primary transition-colors">
-//                   Quiz
-//                 </Link>
-//                 <Link href="/support" className="text-foreground hover:text-primary transition-colors">
-//                   Support
-//                 </Link>
-//                 <Link href="/faq" className="text-foreground hover:text-primary transition-colors">
-//                   FAQ
-//                 </Link>
-//               </nav>
-
-//               <div className="flex items-center gap-4">
-//                 <MobileNav />
-//                 <SessionHeader />
-//                 <Link href="/signin">
-//                   <Button variant="outline">Try Demo</Button>
-//                 </Link>
-//               </div>
-//             </Container>
-//           </header>
-
-//           <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-//             <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-//               <main id="main-content" className="min-h-screen">
-//                 {children}
-//               </main>
-//               <AIChatWidget />
-//               <Toaster />
-//             </ThemeProvider>
-//           </Suspense>
-//         </SessionProviderWrapper>
-//         {/* <Analytics /> */}
-//       </body>
-//     </html>
-//   )
-// }
+// Removed duplicated old layout comment after merging functionality above.
 
