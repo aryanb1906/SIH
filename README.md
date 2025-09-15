@@ -22,7 +22,7 @@ FarmGrow motivates farmers to adopt eco-friendly agricultural techniques via str
 
 | Area | Description |
 |------|-------------|
-| Missions | Guided, goal‑oriented sustainable practice challenges. |
+| Missions | Interactive, goal‑oriented sustainable practice challenges with start/progress/complete actions, search/filter, recommendations, and persistent progress tracking. |
 | Dashboard | Tracks points, progress, achievements, and impact metrics. |
 | Community | Space for knowledge sharing (future: threads, comments). |
 | Rewards | Earn and redeem points for inputs, training, certifications. |
@@ -158,7 +158,7 @@ Empowering farmers with sustainable practices through missions, community, rewar
 
 ## 🚀 Features
 
-- **Missions**: Guided sustainable farming challenges
+- **Missions**: Interactive sustainable farming challenges (start, progress, complete, recommendations, search/filter, persistent progress)
 - **Dashboard**: Track points, achievements, and progress
 - **Community**: Share knowledge and connect with other farmers
 - **Rewards**: Earn and redeem points for inputs, training, and certificates
@@ -211,6 +211,7 @@ lib/, hooks/         # Utilities & custom hooks
 
 ## 🌟 Recent Improvements
 
+- Interactive Missions: start, progress, complete missions; progress bar and points; recommendations and search/filter; persistent state in localStorage
 - Added Crop Profit Calculator with advanced options and ROI
 - Added Weather Forecast page with live data and improved UI
 - Blog system: persistent posts, write/view, front page sync
