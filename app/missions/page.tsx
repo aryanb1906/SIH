@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Container } from "@/components/container"
 import { Badge } from "@/components/ui/badge"
@@ -13,97 +14,98 @@ interface Mission {
   id: string
   title: string
   description: string
-  difficulty: "Easy" | "Medium" | "Hard"
+  difficulty: "Easy" | "Medium" | "Hard" | "beginner" | "intermediate" | "advanced"
   duration: string
   rewards: number
+  progress: number
   participants: number
   category: string
-  progress: number
   status: "not-started" | "in-progress" | "completed"
 }
 
-const initialMissions: Mission[] = [
-  {
-    id: "mulching",
-    title: "Mulching Challenge",
-    description: "Learn and implement mulching techniques to improve soil health and water retention.",
-    difficulty: "Easy",
-    duration: "2 weeks",
-    rewards: 150,
-    progress: 65,
-    participants: 234,
-    category: "Soil Health",
-    status: "in-progress",
-  },
-  {
-    id: "bio-pesticides",
-    title: "Switch to Bio-Pesticides",
-    description: "Transition from chemical pesticides to organic alternatives for healthier crops.",
-    difficulty: "Medium",
-    duration: "3 weeks",
-    rewards: 250,
-    progress: 0,
-    participants: 189,
-    category: "Pest Control",
-    status: "not-started",
-  },
-  {
-    id: "mixed-cropping",
-    title: "Mixed Cropping Task",
-    description: "Implement intercropping techniques to maximize yield and soil nutrients.",
-    difficulty: "Hard",
-    duration: "4 weeks",
-    rewards: 400,
-    progress: 0,
-    participants: 156,
-    category: "Crop Planning",
-    status: "not-started",
-  },
-  {
-    id: "water-conservation",
-    title: "Water Conservation Methods",
-    description: "Learn drip irrigation and rainwater harvesting for efficient water use.",
-    difficulty: "Medium",
-    duration: "3 weeks",
-    rewards: 300,
-    progress: 0,
-    participants: 278,
-    category: "Water Management",
-    status: "not-started",
-  },
-  {
-    id: "composting",
-    title: "Composting Workshop",
-    description: "Create nutrient-rich compost from farm waste to improve soil fertility.",
-    difficulty: "Easy",
-    duration: "1 week",
-    rewards: 100,
-    progress: 100,
-    participants: 345,
-    category: "Soil Health",
-    status: "completed",
-  },
-  {
-    id: "crop-rotation",
-    title: "Crop Rotation Planning",
-    description: "Design a sustainable crop rotation schedule for your farm's specific needs.",
-    difficulty: "Hard",
-    duration: "6 weeks",
-    rewards: 500,
-    progress: 0,
-    participants: 98,
-    category: "Crop Planning",
-    status: "not-started",
-  },
-]
-
 export default function MissionsPage() {
+  const initialMissions: Mission[] = [
+    {
+      id: "mulching",
+      title: "Mulching Challenge",
+      description: "Learn and implement mulching techniques to improve soil health and water retention.",
+      difficulty: "Easy",
+      duration: "2 weeks",
+      rewards: 150,
+      progress: 65,
+      participants: 234,
+      category: "Soil Health",
+      status: "in-progress",
+    },
+    {
+      id: "bio-pesticides",
+      title: "Switch to Bio-Pesticides",
+      description: "Transition from chemical pesticides to organic alternatives for healthier crops.",
+      difficulty: "Medium",
+      duration: "3 weeks",
+      rewards: 250,
+      progress: 0,
+      participants: 189,
+      category: "Pest Control",
+      status: "not-started",
+    },
+    {
+      id: "mixed-cropping",
+      title: "Mixed Cropping Task",
+      description: "Implement intercropping techniques to maximize yield and soil nutrients.",
+      difficulty: "Hard",
+      duration: "4 weeks",
+      rewards: 400,
+      progress: 0,
+      participants: 156,
+      category: "Crop Planning",
+      status: "not-started",
+    },
+    {
+      id: "water-conservation",
+      title: "Water Conservation Methods",
+      description: "Learn drip irrigation and rainwater harvesting for efficient water use.",
+      difficulty: "Medium",
+      duration: "3 weeks",
+      rewards: 300,
+      progress: 0,
+      participants: 278,
+      category: "Water Management",
+      status: "not-started",
+    },
+    {
+      id: "composting",
+      title: "Composting Workshop",
+      description: "Create nutrient-rich compost from farm waste to improve soil fertility.",
+      difficulty: "Easy",
+      duration: "1 week",
+      rewards: 100,
+      progress: 100,
+      participants: 345,
+      category: "Soil Health",
+      status: "completed",
+    },
+    {
+      id: "crop-rotation",
+      title: "Crop Rotation Planning",
+      description: "Design a sustainable crop rotation schedule for your farm's specific needs.",
+      difficulty: "Hard",
+      duration: "6 weeks",
+      rewards: 500,
+      progress: 0,
+      participants: 98,
+      category: "Crop Planning",
+      status: "not-started",
+    },
+  ]
+
   const [missions, setMissions] = useState<Mission[]>([])
   const [query, setQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [userPoints, setUserPoints] = useState<number>(() => Number(localStorage.getItem("missionPoints") || 0))
+  const [searchError, setSearchError] = useState("")
+  const { toast } = useToast()
 
-  // Load missions from storage or init
   useEffect(() => {
     const stored = localStorage.getItem("missionsState")
     if (stored) {
@@ -118,7 +120,6 @@ export default function MissionsPage() {
     setMissions(initialMissions)
   }, [])
 
-  // Persist
   useEffect(() => {
     if (missions.length) {
       localStorage.setItem("missionsState", JSON.stringify(missions))
@@ -130,11 +131,13 @@ export default function MissionsPage() {
 
   function startMission(id: string) {
     setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "in-progress", progress: m.progress || 0 } : m))
+    toast({ title: "Mission Started", description: "You have started a new mission!" })
   }
   function completeMission(id: string) {
     setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "completed", progress: 100 } : m))
     const mission = missions.find(m => m.id === id)
     if (mission) setUserPoints(p => p + mission.rewards)
+    toast({ title: "Mission Completed", description: "Congratulations! Mission completed and points awarded." })
   }
   function updateProgress(id: string, stepPoints: number) {
     setMissions(prev => prev.map(m => {
@@ -152,6 +155,9 @@ export default function MissionsPage() {
     const mission = missions.find(m => m.id === id)
     if (mission && mission.progress < 100 && mission.progress + stepPoints >= 100) {
       setUserPoints(p => p + mission.rewards)
+      toast({ title: "Mission Completed", description: "Congratulations! Mission completed and points awarded." })
+    } else {
+      toast({ title: "Progress Updated", description: "Mission progress updated." })
     }
   }
   // Simple recommendation: not completed & not started first
@@ -203,7 +209,15 @@ export default function MissionsPage() {
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search missions..." className="pl-10" value={query} onChange={e => setQuery(e.target.value)} />
+            <Input placeholder="Search missions..." className="pl-10" value={query} onChange={e => {
+              setQuery(e.target.value)
+              if (e.target.value.trim() === "") {
+                setSearchError("Search cannot be empty.")
+              } else {
+                setSearchError("")
+              }
+            }} />
+            {searchError && <div className="text-xs text-red-600 mt-1">{searchError}</div>}
           </div>
           <Button variant="outline" className="sm:w-auto bg-transparent">
             <Filter className="h-4 w-4 mr-2" />

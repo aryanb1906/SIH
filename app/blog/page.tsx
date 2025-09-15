@@ -5,10 +5,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState, useMemo } from "react"
+import { useToast } from "@/hooks/use-toast"
 import { Heart, Search, Tag as TagIcon, Filter } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function BlogIndexPage() {
     const [posts, setPosts] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
     const [form, setForm] = useState({ title: "", excerpt: "", content: "", author: "", category: "General", tags: "" })
     const [showForm, setShowForm] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
@@ -17,62 +20,71 @@ export default function BlogIndexPage() {
     const [search, setSearch] = useState("")
     const [activeCategory, setActiveCategory] = useState<string | null>(null)
     const [activeTag, setActiveTag] = useState<string | null>(null)
+    const { toast } = useToast()
+    // Pagination logic
+    const POSTS_PER_PAGE = 6
+    const [page, setPage] = useState(1)
 
     useEffect(() => {
-        const stored = localStorage.getItem("blogPosts")
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored)
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    setPosts(parsed)
-                    return
-                }
-            } catch { }
-        }
-        // Seed with 3 demo posts (parity with homepage)
-        const demoPosts = [
-            {
-                id: "demo-1",
-                title: "How Mulching Boosts Yields",
-                excerpt: "Discover how simple mulching techniques can increase your farm's productivity.",
-                content: "Mulching helps retain soil moisture, suppress weeds, and improve soil health. Try using organic materials like straw or leaves.",
-                author: "Rajesh Singh",
-                publishedAt: new Date().toISOString(),
-                readTime: 3,
-                category: "Sustainability",
-                tags: ["mulching", "soil", "yield"],
-                views: 0,
-                likes: 0,
-            },
-            {
-                id: "demo-2",
-                title: "Bio-Pesticides: Safer Pest Control",
-                excerpt: "Learn about natural alternatives to chemical pesticides for healthier crops.",
-                content: "Bio-pesticides are derived from natural materials and are safer for the environment. Neem oil and Bacillus thuringiensis are popular choices.",
-                author: "Priya Mehta",
-                publishedAt: new Date().toISOString(),
-                readTime: 4,
-                category: "Organic Farming",
-                tags: ["bio-pesticide", "organic", "pest control"],
-                views: 0,
-                likes: 0,
-            },
-            {
-                id: "demo-3",
-                title: "Water Conservation Tips",
-                excerpt: "Simple ways to save water and improve farm sustainability.",
-                content: "Drip irrigation, rainwater harvesting, and mulching are effective water-saving techniques every farmer should try.",
-                author: "Amit Kumar",
-                publishedAt: new Date().toISOString(),
-                readTime: 2,
-                category: "Water Management",
-                tags: ["water", "conservation", "irrigation"],
-                views: 0,
-                likes: 0,
-            },
-        ]
-        setPosts(demoPosts)
-        localStorage.setItem("blogPosts", JSON.stringify(demoPosts))
+        setLoading(true)
+        setTimeout(() => {
+            const stored = localStorage.getItem("blogPosts")
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored)
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        setPosts(parsed)
+                        setLoading(false)
+                        return
+                    }
+                } catch { }
+            }
+            // Seed with 3 demo posts (parity with homepage)
+            const demoPosts = [
+                {
+                    id: "demo-1",
+                    title: "How Mulching Boosts Yields",
+                    excerpt: "Discover how simple mulching techniques can increase your farm's productivity.",
+                    content: "Mulching helps retain soil moisture, suppress weeds, and improve soil health. Try using organic materials like straw or leaves.",
+                    author: "Rajesh Singh",
+                    publishedAt: new Date().toISOString(),
+                    readTime: 3,
+                    category: "Sustainability",
+                    tags: ["mulching", "soil", "yield"],
+                    views: 0,
+                    likes: 0,
+                },
+                {
+                    id: "demo-2",
+                    title: "Bio-Pesticides: Safer Pest Control",
+                    excerpt: "Learn about natural alternatives to chemical pesticides for healthier crops.",
+                    content: "Bio-pesticides are derived from natural materials and are safer for the environment. Neem oil and Bacillus thuringiensis are popular choices.",
+                    author: "Priya Mehta",
+                    publishedAt: new Date().toISOString(),
+                    readTime: 4,
+                    category: "Organic Farming",
+                    tags: ["bio-pesticide", "organic", "pest control"],
+                    views: 0,
+                    likes: 0,
+                },
+                {
+                    id: "demo-3",
+                    title: "Water Conservation Tips",
+                    excerpt: "Simple ways to save water and improve farm sustainability.",
+                    content: "Drip irrigation, rainwater harvesting, and mulching are effective water-saving techniques every farmer should try.",
+                    author: "Amit Kumar",
+                    publishedAt: new Date().toISOString(),
+                    readTime: 2,
+                    category: "Water Management",
+                    tags: ["water", "conservation", "irrigation"],
+                    views: 0,
+                    likes: 0,
+                },
+            ]
+            setPosts(demoPosts)
+            localStorage.setItem("blogPosts", JSON.stringify(demoPosts))
+            setLoading(false)
+        }, 900)
     }, [])
 
     const handleChange = (e: any) => setForm({ ...form, [e.target.name]: e.target.value })
@@ -81,6 +93,7 @@ export default function BlogIndexPage() {
         // Validation: all fields required
         if (!form.title.trim() || !form.excerpt.trim() || !form.content.trim() || !form.author.trim() || !form.category.trim() || !form.tags.trim()) {
             setError("Please fill in all fields.")
+            toast({ title: "Error", description: "Please fill in all fields.", variant: "destructive" })
             return
         }
         setError("")
@@ -95,6 +108,7 @@ export default function BlogIndexPage() {
             localStorage.setItem("blogPosts", JSON.stringify(updated))
             setEditId(null)
             setShowSuccess(true)
+            toast({ title: "Blog Updated", description: "Your blog post was updated successfully!" })
             setTimeout(() => setShowSuccess(false), 2500)
         } else {
             // Add new post
@@ -115,6 +129,7 @@ export default function BlogIndexPage() {
             setPosts(updated)
             localStorage.setItem("blogPosts", JSON.stringify(updated))
             setShowSuccess(true)
+            toast({ title: "Blog Posted", description: "Your blog post was submitted successfully!" })
             setTimeout(() => setShowSuccess(false), 2500)
         }
         setForm({ title: "", excerpt: "", content: "", author: "", category: "General", tags: "" })
@@ -155,6 +170,8 @@ export default function BlogIndexPage() {
             return matchSearch && matchCategory && matchTag
         })
     }, [posts, search, activeCategory, activeTag])
+    const totalPages = Math.ceil(filteredPosts.length / POSTS_PER_PAGE)
+    const paginatedPosts = filteredPosts.slice((page - 1) * POSTS_PER_PAGE, page * POSTS_PER_PAGE)
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-background to-muted">
@@ -216,40 +233,73 @@ export default function BlogIndexPage() {
                         )}
                     </form>
                 )}
-                {filteredPosts.length === 0 ? (
-                    <p className="text-muted-foreground">No blog posts found.</p>
-                ) : (
+                {loading ? (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {/* ...existing code... */}
-                        {filteredPosts.map(post => (
-                            <Card key={post.id} className="group hover:shadow-lg transition-all duration-300">
+                        {[...Array(3)].map((_, i) => (
+                            <Card key={i} className="group">
                                 <CardContent className="p-6">
                                     <div className="flex items-center gap-2 mb-3 flex-wrap">
-                                        <Badge variant="secondary" className="text-xs">{post.category}</Badge>
-                                        {post.tags.slice(0, 3).map((t: string) => (
-                                            <Badge key={t} variant="outline" className="text-xxs cursor-pointer" onClick={() => setActiveTag(t)}>{t}</Badge>
-                                        ))}
+                                        <Skeleton className="h-5 w-20" />
+                                        <Skeleton className="h-5 w-12" />
                                     </div>
-                                    <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
-                                        {post.title}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{post.excerpt}</p>
-                                    <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
-                                        <span>{post.readTime} min</span>
-                                        <span>{post.views || 0} views · {post.likes || 0} likes</span>
+                                    <Skeleton className="h-6 w-40 mb-2" />
+                                    <Skeleton className="h-4 w-full mb-4" />
+                                    <div className="flex items-center justify-between mb-3">
+                                        <Skeleton className="h-4 w-10" />
+                                        <Skeleton className="h-4 w-16" />
                                     </div>
                                     <div className="flex gap-2 flex-wrap">
-                                        <Link href={`/blog/${post.id}`} className="text-primary hover:underline text-sm font-medium">Read More</Link>
-                                        <Button variant="ghost" size="sm" onClick={() => handleLike(post.id)} className="flex items-center gap-1 px-2">
-                                            <Heart className="h-4 w-4" /> {post.likes || 0}
-                                        </Button>
-                                        <Button variant="outline" size="sm" onClick={() => handleEdit(post)}>Edit</Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDelete(post.id)}>Delete</Button>
+                                        <Skeleton className="h-8 w-20" />
+                                        <Skeleton className="h-8 w-10" />
+                                        <Skeleton className="h-8 w-14" />
                                     </div>
                                 </CardContent>
                             </Card>
                         ))}
                     </div>
+                ) : filteredPosts.length === 0 ? (
+                    <p className="text-muted-foreground">No blog posts found.</p>
+                ) : (
+                    <>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {paginatedPosts.map(post => (
+                                <Card key={post.id} className="group hover:shadow-lg transition-all duration-300">
+                                    <CardContent className="p-6">
+                                        <div className="flex items-center gap-2 mb-3 flex-wrap">
+                                            <Badge variant="secondary" className="text-xs">{post.category}</Badge>
+                                            {post.tags.slice(0, 3).map((t: string) => (
+                                                <Badge key={t} variant="outline" className="text-xxs cursor-pointer" onClick={() => setActiveTag(t)}>{t}</Badge>
+                                            ))}
+                                        </div>
+                                        <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                                            {post.title}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{post.excerpt}</p>
+                                        <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
+                                            <span>{post.readTime} min</span>
+                                            <span>{post.views || 0} views · {post.likes || 0} likes</span>
+                                        </div>
+                                        <div className="flex gap-2 flex-wrap">
+                                            <Link href={`/blog/${post.id}`} className="text-primary hover:underline text-sm font-medium">Read More</Link>
+                                            <Button variant="ghost" size="sm" onClick={() => handleLike(post.id)} className="flex items-center gap-1 px-2">
+                                                <Heart className="h-4 w-4" /> {post.likes || 0}
+                                            </Button>
+                                            <Button variant="outline" size="sm" onClick={() => handleEdit(post)}>Edit</Button>
+                                            <Button variant="destructive" size="sm" onClick={() => handleDelete(post.id)}>Delete</Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                        {/* Pagination Controls */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-4 mt-8">
+                                <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</Button>
+                                <span className="text-sm">Page {page} of {totalPages}</span>
+                                <Button variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(page + 1)}>Next</Button>
+                            </div>
+                        )}
+                    </>
                 )}
             </Container>
         </div>

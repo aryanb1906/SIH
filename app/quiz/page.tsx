@@ -11,10 +11,20 @@ async function fetchQuizData() {
 }
 
 export default function QuizPage() {
+    // Sound assets
+    const correctSound = typeof window !== 'undefined' ? new Audio('/sounds/correct.mp3') : null
+    const incorrectSound = typeof window !== 'undefined' ? new Audio('/sounds/incorrect.mp3') : null
+    const [answerAnim, setAnswerAnim] = useState<string>("")
     const [allQuestions, setAllQuestions] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
     const [questions, setQuestions] = useState<any[]>([])
-    const [current, setCurrent] = useState(0)
-    const [selected, setSelected] = useState<any>(null)
+    const [current, setCurrent] = useState(() => Number(localStorage.getItem("quizCurrent") || 0))
+    const [selected, setSelected] = useState<any>(() => {
+        try {
+            const saved = localStorage.getItem("quizSelected")
+            return saved ? JSON.parse(saved) : null
+        } catch { return null }
+    })
     const [showFeedback, setShowFeedback] = useState(false)
     const [score, setScore] = useState(() => Number(localStorage.getItem("quizScore") || 0))
     const [level, setLevel] = useState(localStorage.getItem("quizLevel") || "Beginner")
@@ -33,8 +43,9 @@ export default function QuizPage() {
         fetchQuizData().then(data => {
             setAllQuestions(data)
             // Extract unique categories from tags
-            const cats = Array.from(new Set(data.flatMap((q: any) => q.tags).filter((tag: any) => typeof tag === "string")));
+            const cats = Array.from(new Set(data.flatMap((q: any) => q.tags).filter((tag: any) => typeof tag === "string"))) as string[];
             setCategories(cats)
+            setLoading(false)
         })
     }, [])
 
@@ -50,8 +61,20 @@ export default function QuizPage() {
         localStorage.setItem("quizScore", String(score))
         localStorage.setItem("quizLevel", level)
         localStorage.setItem("quizBadges", JSON.stringify(badges))
-    }, [score, level, badges])
+        localStorage.setItem("quizCurrent", String(current))
+        localStorage.setItem("quizSelected", JSON.stringify(selected))
+    }, [score, level, badges, current, selected])
 
+    if (loading) {
+        return (
+            <Container className="py-20 max-w-xl text-center">
+                <div className="flex flex-col items-center justify-center h-40">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-primary mb-4"></div>
+                    <div className="text-lg text-muted-foreground">Loading quiz...</div>
+                </div>
+            </Container>
+        )
+    }
     if (showLanding) {
         return (
             <Container className="py-20 max-w-xl text-center">
@@ -107,12 +130,15 @@ export default function QuizPage() {
         setShowExplanation(true)
         let newScore = score
         let newBadges = badges
+        let isCorrect = false
         if (Array.isArray(q.answer)) {
             if (JSON.stringify(idx) === JSON.stringify(q.answer)) {
                 newScore += 10
+                isCorrect = true
             }
         } else if (idx === q.answer) {
             newScore += 10
+            isCorrect = true
             if (q.tags.includes("water") && !badges.includes("Water Guardian 💧")) newBadges = [...badges, "Water Guardian 💧"]
             if (q.tags.includes("soil") && !badges.includes("Soil Saver 🌍")) newBadges = [...badges, "Soil Saver 🌍"]
         }
@@ -122,6 +148,11 @@ export default function QuizPage() {
         if (newScore >= 30) setLevel("Skilled")
         if (newScore >= 60) setLevel("Expert")
         if (newScore >= 100) setLevel("Champion Farmer")
+        // Play sound and animate
+        if (isCorrect && correctSound) correctSound.play()
+        if (!isCorrect && incorrectSound) incorrectSound.play()
+        setAnswerAnim(isCorrect ? "animate-correct" : "animate-incorrect")
+        setTimeout(() => setAnswerAnim(""), 700)
     }
 
     function nextQuestion() {
@@ -140,76 +171,102 @@ export default function QuizPage() {
     function handleDragDrop(toolIdx: number, useIdx: number) {
         const answerArr = questions[current].answer
         const correct = answerArr[toolIdx] === q.options[useIdx].use
-        if (correct) {
+        if (correct && !showFeedback) {
             setScore(score + 10)
-            if (score + 10 >= 30) setLevel("Skilled")
-            if (score + 10 >= 60) setLevel("Expert")
-            if (score + 10 >= 100) setLevel("Champion Farmer")
         }
         setShowFeedback(true)
         setShowExplanation(true)
     }
 
+    const isMulti = Array.isArray(q.answer)
+
+    function toggleMulti(idx: number) {
+        if (!isMulti) return
+        if (showFeedback) return
+        let next: number[] = Array.isArray(selected) ? [...selected] : []
+        if (next.includes(idx)) {
+            next = next.filter(i => i !== idx)
+        } else {
+            next.push(idx)
+        }
+        setSelected(next)
+    }
+
+    function submitMulti() {
+        if (!isMulti || showFeedback) return
+        handleAnswer(selected)
+    }
+
     return (
-        <Container className="py-10 max-w-2xl">
-            <div className="mb-6 flex justify-between items-center">
-                <div className="font-bold text-lg">Level: {level}</div>
-                <div className="font-bold text-lg">Score: {score}</div>
-                <div className="font-bold text-lg">Time: {timer}s</div>
+        <Container className={`py-10 max-w-3xl ${answerAnim}`}>
+            <div className="flex justify-between items-start mb-6">
+                <div>
+                    <h2 className="text-xl font-semibold">Question {current + 1} / {questions.length}</h2>
+                    <p className="text-sm text-muted-foreground">Level: {level} • Score: {score}</p>
+                </div>
+                <div className={`font-mono text-sm px-3 py-1 rounded ${timer <= 5 ? 'bg-red-100 text-red-700' : 'bg-muted'}`}>⏱ {timer}s</div>
             </div>
-            <div className="mb-4">
-                {badges.map(b => (
-                    <span key={b} className="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full mr-2">{b}</span>
-                ))}
-            </div>
-            <div className="mb-8">
-                <div className="font-semibold text-xl mb-2">{q.question}</div>
-                {q.image && <Image src={q.image} alt="question" width={120} height={80} className="mb-2" />}
-                {q.audio && <audio src={q.audio} controls className="mb-2" />}
-                {/* MCQ, True/False, Scenario */}
-                {(q.type === "mcq" || q.type === "truefalse" || q.type === "scenario") && (
-                    <div className="grid gap-3">
-                        {q.options.map((opt: any, idx: number) => (
-                            <Button key={idx} variant={selected === idx ? "secondary" : "outline"} onClick={() => handleAnswer(idx)} disabled={showFeedback}>
-                                {opt}
+            <div className="mb-4 font-medium text-lg">{q.question}</div>
+            {q.type !== 'dragdrop' && (
+                <div className="grid gap-3 mb-6">
+                    {q.options.map((opt: any, idx: number) => {
+                        const isSel = isMulti ? Array.isArray(selected) && selected.includes(idx) : selected === idx
+                        const correct = !isMulti && showFeedback && idx === q.answer
+                        const incorrect = !isMulti && showFeedback && idx === selected && idx !== q.answer
+                        return (
+                            <Button
+                                key={idx}
+                                variant={correct ? 'default' : isSel ? 'secondary' : 'outline'}
+                                className={`justify-start text-left h-auto py-3 px-4 transition-colors ${correct ? 'border-green-600 bg-green-600 text-white' : ''} ${incorrect ? 'border-red-600 bg-red-600 text-white' : ''}`}
+                                disabled={showFeedback && !isMulti}
+                                onClick={() => isMulti ? toggleMulti(idx) : handleAnswer(idx)}
+                            >
+                                <span className="mr-2 text-sm font-mono">{String.fromCharCode(65 + idx)}.</span>
+                                <span>{typeof opt === 'string' ? opt : opt.label || opt.use || opt}</span>
                             </Button>
-                        ))}
-                    </div>
-                )}
-                {/* Drag-drop mini-game (simple) */}
-                {q.type === "dragdrop" && (
-                    <div className="grid gap-3">
-                        {q.options.map((opt: any, idx: number) => (
-                            <div key={idx} className="flex gap-2 items-center">
-                                <span className="font-bold">{opt.tool}</span>
-                                <Button variant="outline" onClick={() => handleDragDrop(idx, idx)} disabled={showFeedback}>{opt.use}</Button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+                        )
+                    })}
+                    {isMulti && !showFeedback && (
+                        <Button onClick={submitMulti} disabled={!Array.isArray(selected) || !selected.length}>Submit Selection</Button>
+                    )}
+                </div>
+            )}
+            {q.type === 'dragdrop' && (
+                <div className="grid gap-3 mb-6">
+                    {q.options.map((opt: any, idx: number) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                            <span className="font-semibold w-32">{opt.tool}</span>
+                            <Button variant="outline" onClick={() => handleDragDrop(idx, idx)} disabled={showFeedback}>{opt.use}</Button>
+                        </div>
+                    ))}
+                </div>
+            )}
             {showFeedback && (
                 <div className="mb-6">
-                    {selected === q.answer || (Array.isArray(q.answer) && JSON.stringify(selected) === JSON.stringify(q.answer)) ? (
-                        <div className="text-green-700 font-bold">Correct!</div>
+                    {(isMulti
+                        ? JSON.stringify((selected || []).slice().sort()) === JSON.stringify((q.answer as any).slice().sort())
+                        : selected === q.answer) ? (
+                        <div className="text-green-700 font-bold transition-transform scale-110">Correct!</div>
                     ) : (
-                        <div className="text-red-700 font-bold">Incorrect!</div>
+                        <div className="text-red-700 font-bold transition-transform scale-110">Incorrect!</div>
                     )}
                     {showExplanation && (
                         <div className="mt-2 text-sm text-muted-foreground">{q.explanation}</div>
                     )}
-                    <Button className="mt-4" onClick={nextQuestion}>
-                        {current === questions.length - 1 ? "Finish Quiz" : "Next Question"}
-                    </Button>
                 </div>
             )}
-            <div className="mt-8 flex justify-between">
-                <div>Progress: {current + 1} / {questions.length}</div>
-                {current === questions.length - 1 && (
-                    <div className="font-bold text-lg text-primary">Quiz Complete! Final Score: {score}</div>
+            <div className="flex gap-4">
+                <Button onClick={nextQuestion}>{current === questions.length - 1 ? 'Finish' : 'Next'}</Button>
+                {!showFeedback && !isMulti && (
+                    <Button variant="outline" onClick={() => { setShowFeedback(true); setShowExplanation(true); }}>Reveal</Button>
                 )}
             </div>
-            {/* Name prompt for leaderboard */}
+            <div className="mt-8 flex justify-between text-sm">
+                <div>Progress: {current + 1} / {questions.length}</div>
+                {current === questions.length - 1 && showFeedback && (
+                    <div className="font-semibold text-primary">Quiz Complete! Score: {score}</div>
+                )}
+            </div>
             {showNamePrompt && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
@@ -225,10 +282,9 @@ export default function QuizPage() {
                             variant="secondary"
                             onClick={() => {
                                 if (userName.trim()) {
-                                    // Save score to leaderboard
-                                    const scores = JSON.parse(localStorage.getItem("quizScores") || "[]")
+                                    const scores = JSON.parse(localStorage.getItem('quizScores') || '[]')
                                     const updated = [...scores.filter((s: any) => s.name !== userName.trim()), { name: userName.trim(), points: score, level, badges }]
-                                    localStorage.setItem("quizScores", JSON.stringify(updated))
+                                    localStorage.setItem('quizScores', JSON.stringify(updated))
                                     setShowNamePrompt(false)
                                 }
                             }}

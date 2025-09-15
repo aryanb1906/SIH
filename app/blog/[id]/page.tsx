@@ -22,6 +22,30 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
   const [post, setPost] = useState<any>(null)
   const [relatedPosts, setRelatedPosts] = useState<any[]>([])
   const [postsLoaded, setPostsLoaded] = useState(false)
+  const [comments, setComments] = useState<any[]>([])
+  const [commentText, setCommentText] = useState("")
+  // Load comments for this post from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(`comments-${params.id}`)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        if (Array.isArray(parsed)) setComments(parsed)
+      } catch { }
+    }
+  }, [params.id])
+
+  // Save comments to localStorage when they change
+  useEffect(() => {
+    localStorage.setItem(`comments-${params.id}`, JSON.stringify(comments))
+  }, [comments, params.id])
+
+  const handleCommentSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!commentText.trim()) return
+    setComments([{ text: commentText, date: new Date().toISOString() }, ...comments])
+    setCommentText("")
+  }
 
   // Persist blogPosts in localStorage
   useEffect(() => {
@@ -211,6 +235,32 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
             </div>
           </article>
 
+          {/* Comments Section */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold mb-6">Comments</h2>
+            <form onSubmit={handleCommentSubmit} className="mb-4 flex gap-2">
+              <input
+                type="text"
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+                placeholder="Add a comment..."
+                className="border rounded px-3 py-2 flex-1"
+              />
+              <Button type="submit" variant="default">Post</Button>
+            </form>
+            <div className="space-y-4">
+              {comments.length === 0 ? (
+                <p className="text-muted-foreground">No comments yet.</p>
+              ) : (
+                comments.map((c, idx) => (
+                  <div key={idx} className="bg-muted rounded p-3">
+                    <div className="text-sm text-muted-foreground mb-1">{new Date(c.date).toLocaleString()}</div>
+                    <div>{c.text}</div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
           {/* Related Posts */}
           {relatedPosts.length > 0 && (
             <section className="mb-12">
