@@ -1,14 +1,14 @@
 <div align="center">
    <img src="public/placeholder-logo.png" alt="FarmGrow" height="82" />
-  
    <h1>FarmGrow – Gamified Sustainable Farming Platform</h1>
-   <p><strong>Empowering farmers with sustainable practices through missions, community, rewards, and AI assistance.</strong></p>
+   <p><strong>Empowering farmers with sustainable practices through missions, community, rewards, quizzes, and AI assistance.</strong></p>
    <p>
+      <a href="#overview">Overview</a> •
+      <a href="#features">Features</a> •
       <a href="#architecture">Architecture</a> •
-      <a href="#tech-stack">Tech Stack</a> •
       <a href="#getting-started">Getting Started</a> •
-      <a href="#ai-chat-flow">AI Chat</a> •
-      <a href="#design-system">Design System</a> •
+      <a href="#environment-variables">Env Vars</a> •
+      <a href="#troubleshooting">Troubleshooting</a> •
       <a href="#roadmap">Roadmap</a>
    </p>
 </div>
@@ -16,300 +16,169 @@
 ---
 
 ## Overview
-FarmGrow motivates farmers to adopt eco-friendly agricultural techniques via structured learning missions, a progress & rewards layer, a collaborative community, and an AI-powered agronomy assistant. Built with performance, accessibility, and extensibility in mind.
+FarmGrow motivates farmers to adopt sustainable, climate‑smart practices through structured missions, quizzes, community interaction, and an AI agronomy assistant. The current build is an MVP optimized for rapid iteration, accessibility, and extensibility.
 
-## Core Features
+## <a id="features"></a>Core Features
 
 | Area | Description |
 |------|-------------|
-| Missions | Interactive, goal‑oriented sustainable practice challenges with start/progress/complete actions, search/filter, recommendations, and persistent progress tracking. |
-| Dashboard | Tracks points, progress, achievements, and impact metrics. |
-| Community | Space for knowledge sharing (future: threads, comments). |
-| Rewards | Earn and redeem points for inputs, training, certifications. |
-| AI Support | Context‑aware Gemini assistant for agronomy queries. |
-| Authentication | Google OAuth (email provider optional). |
-| Gamification | Badges, XP, streaks (extensible). |
-| Quiz | Timed quiz with levels, categories, badges, local progress persistence, sounds & animations. |
-| Leaderboard | Local (device) ranking of quiz scores with level & badge snapshot. |
-| Feedback | In‑app feedback / bug report form (stored locally in browser for MVP). |
+| Missions | Start / progress / complete sustainable practice challenges; local persistence and recommendations. |
+| Dashboard | Track points, streak potential, progress, and reward metrics. |
+| Rewards | View and (future) redeem reward items; mock persistence. |
+| Community | Placeholder hub for future threaded discussions. |
+| Blog | Create, list, view, and locally persist posts with tags & filters. |
+| Quiz | Timed multi‑question quiz with levels, badges, sounds, share & leaderboard views. |
+| Leaderboard | Local (device) ranking of quiz scores including level & badges summary. |
+| AI Chat | Gemini‑powered plain‑text assistant (no markdown parsing) via `/api/chat`. |
+| Feedback | Local feedback capture (`localStorage`) for feature / bug tracking. |
+| Weather & Calculator | Crop profit calculator + city weather lookup. |
+| Auth | Google OAuth (NextAuth) + demo sign-in placeholder. |
 
 ---
 
-## Architecture
+## <a id="architecture"></a>Architecture
 
-High‑level logical layers:
-
-1. UI Layer (Next.js App Router + Tailwind + Radix primitives)
-2. Auth Layer (NextAuth.js – session + OAuth providers)
-3. AI Layer (Gemini API – routed through `/api/chat`)
-4. Domain Modules (missions, rewards, community, support)
-5. Design System (reusable UI components under `components/ui` + layout primitives)
-6. Utilities (helper functions in `lib/` – can expand later)
+Logical layers:
+1. UI (Next.js App Router + Tailwind CSS + Radix primitives + custom design system)
+2. Auth (NextAuth.js session + OAuth provider)
+3. AI (Gemini API wrapper route `app/api/chat/route.ts`)
+4. Domain modules (missions, rewards, quiz, blog, support)
+5. State & Utilities (Zustand + helpers in `lib/` & custom hooks)
+6. Static Assets & Styling (`public/`, `styles/`)
 
 ```
 app/
-   page.tsx                # Landing + navigation
-   dashboard/              # Auth-gated dashboard
-   missions/               # Missions listing (static placeholder)
-   rewards/                # Rewards center
-   community/              # Community hub (future expansion)
-   support/                # Full AI chat interface
-   signin/                 # Auth sign-in page
    api/
-      auth/[...nextauth]/   # NextAuth route handler
-      chat/route.ts         # Gemini proxy endpoint
+      chat/route.ts          # Gemini proxy
+   blog/                    # Blog pages
+   calculator/              # Crop profit calculator
+   community/               # Community hub (placeholder)
+   dashboard/               # User dashboard
+   leaderboard/             # Quiz leaderboard
+   missions/                # Missions listing
+   quiz/                    # Quiz flows + subpages
+   rewards/                 # Rewards center
+   support/                 # Full AI chat page
+   signin/                  # Auth
 components/
-   ai-chat-widget.tsx      # Floating quick-access AI widget
-   mission-card.tsx        # Presentational mission card
-   rewards-dashboard.tsx   # Rewards summary module
-   session-header.tsx      # Session-aware header (login/logout)
-   container.tsx           # Layout width & horizontal padding control
-   ui/                     # Design system primitives (button, card, etc.)
-hooks/                    # Reusable stateful logic
-lib/                      # Utilities (e.g., `utils.ts`)
-public/                   # Static assets
-styles/                   # Global stylesheet & Tailwind layers
+   ai-chat-widget.tsx
+   feedback-form.tsx
+   mission-card.tsx
+   rewards-dashboard.tsx
+   ui/                      # Reusable primitives
+hooks/
+lib/
+public/
+styles/
 ```
 
-### Data Flow (Current MVP)
-Data is mock/static. Future persistence (PostgreSQL + Prisma or Supabase) can integrate via server actions or API routes.
+### AI Chat Flow
+1. User input (widget or `/support`).
+2. POST to `/api/chat` with `{ message }`.
+3. Route calls Gemini with safety prompt.
+4. Response returned as plain text.
+5. UI appends message (no markdown rendering to reduce injection surface).
 
-### Auth Flow
-1. User clicks `Sign In` → `/api/auth/signin` (Google)
-2. Google OAuth → callback → session cookie
-3. Protected routes (e.g., `/dashboard`) guard via session check
-4. `SessionHeader` reflects login state & sign-out
+### Data & Persistence (MVP)
+All state is local (memory or `localStorage`). Future plan: Postgres + Prisma or Supabase with server actions.
 
-### <a id="ai-chat-flow"></a>AI Chat Flow
-1. User submits question (widget or `/support`)
-2. Frontend POST → `/api/chat` `{ message, context }`
-3. System prompt constrains output (farming only, plain text)
-4. Gemini returns answer → JSON `{ message }`
-5. UI renders plain text (no markdown parsing)
-
----
-
-## Feedback & Bug Reporting (MVP)
-The dashboard now includes a `FeedbackForm` component (`components/feedback-form.tsx`). Submissions are:
-- Stored locally in `localStorage` under the key `feedbackItems`
-- Categorized as `feature` or `bug`
-- Timestamped and listed in a scrollable panel below the form
-
-Future server enhancement ideas:
-- Persist to a database + admin triage UI
-- Add email / webhook notifications
-- Auto-attach client meta (browser, viewport, user id)
-
-## Quiz Leaderboard (Local)
-`/leaderboard` page reads `quizScores` from `localStorage` and displays the top 50 entries sorted by points.
-Each entry: name, points, level, badges (first token for compactness).
-
-Current limitations:
-- Scores are device‑local (not shared across users)
-- No anti-cheat measures
-
-Upgrade path:
-1. Add server API (POST /api/quiz/score) with auth
-2. Store in relational DB (Postgres/Supabase) with unique user ID
-3. Add seasonal resets + pagination + filters (region / level)
-4. Add signed submission tokens to prevent tampering
-
----
+### Feedback & Leaderboard Storage
+Stored under keys: `feedbackItems`, `quizScores` in `localStorage`.
 
 ---
 
 ## <a id="getting-started"></a>Getting Started
 
-1. Clone the repository
-2. Copy `.env.example` to `.env.local`
-3. Fill in required environment variables (see below)
+1. Clone: `git clone git@github.com:aryanb1906/SIH.git` & `cd SIH`
+2. Copy `.env.example` → `.env.local`
+3. Fill in the required environment variables
 4. Install dependencies:
-   - Using **npm** (default): `npm install`
-   - (Optional) Using **pnpm** (if installed & execution policy allows): `pnpm install`
-5. Run the development server: `npm run dev` (or `pnpm dev`)
-6. Open `http://localhost:3000`
-
-### Environment Variables
-
-Auth & AI features require keys/secrets. Minimal required for basic login + chat:
-
-```
-GOOGLE_CLIENT_ID=your-google-oauth-client-id
-GOOGLE_CLIENT_SECRET=your-google-oauth-client-secret
-GEMINI_API_KEY=your-gemini-api-key
-NEXTAUTH_SECRET=generate-a-random-secret
-NEXTAUTH_URL=http://localhost:3000
-```
-
-Generate `NEXTAUTH_SECRET` (on mac/linux) with: `openssl rand -base64 32`  
-On Windows (PowerShell): `[Convert]::ToBase64String((New-Object Byte[] 32 | % { (Get-Random -Maximum 256) }))`
-
-Optional (enable email sign-in):
-```
-EMAIL_SERVER=smtp://user:pass@smtp.example.com:587
-EMAIL_FROM=FarmGrow <no-reply@example.com>
-```
-
-### Obtaining a Gemini API Key
-Visit Google AI Studio: https://makersuite.google.com/app/apikey and create a key, then set `GEMINI_API_KEY`.
-
-### Using pnpm (Optional)
-If you prefer `pnpm` but PowerShell blocks scripts, open a **Command Prompt** and run:
-```
-cmd /c pnpm install
-cmd /c pnpm dev
-```
+    - `npm install` (default)
+    - or `pnpm install` (if you use pnpm)
+5. Start dev server: `npm run dev`
+6. Visit `http://localhost:3000`
 
 ### Scripts
 ```
-npm run dev     # Start dev server
-npm run build   # Production build
-npm start       # Start prod server (after build)
-npm run lint    # Lint (currently disabled during build in config)
+npm run dev     # Start development server
+npm run build   # Build for production
+npm start       # Run production build
+npm run lint    # Lint codebase
 ```
-
-### Troubleshooting
-| Issue | Fix |
-|-------|-----|
-| `AI Chat Error: Failed to get AI response` | Ensure `GEMINI_API_KEY` is valid and restart dev server. |
-| Google sign-in loop / 400 error | Confirm `GOOGLE_CLIENT_ID/SECRET` and that Authorized redirect URI includes `http://localhost:3000/api/auth/callback/google`. |
-| Email login not showing | Add both `EMAIL_SERVER` and `EMAIL_FROM` to `.env.local` and restart. |
-| PowerShell cannot run npm/pnpm (`running scripts is disabled`) | Use Command Prompt or change execution policy: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`. |
-| 404 on `/api/auth/*` | Ensure the `[...nextauth]` folder and `route.ts` exist (they do by default). |
-
-### Deployment Notes
-- Set all required env vars in your hosting provider (e.g., Vercel project settings).
-- If using Email provider, configure production SMTP and verified sending domain.
-- `images.unoptimized` is enabled in `next.config.mjs` for simpler hosting; remove for production optimization.
-
-### Security
-
-# FarmGrow – SIH MVP
-
-Empowering farmers with sustainable practices through missions, community, rewards, and AI assistance.
-
-## 🚀 Features
-
-- **Missions**: Interactive sustainable farming challenges (start, progress, complete, recommendations, search/filter, persistent progress)
-- **Dashboard**: Track points, achievements, and progress
-- **Community**: Share knowledge and connect with other farmers
-- **Rewards**: Earn and redeem points for inputs, training, and certificates
-- **AI Support**: Gemini-powered assistant for farming queries (chatbot and widget)
-- **Authentication**: Google OAuth and demo sign-in
-- **Blog System**: Write, view, and persist blog posts
-- **Crop Profit Calculator**: Calculate profits, ROI, and margins for different crops
-- **Weather Forecast**: Get live weather data for any city
-- **Navigation**: Consistent Back button and modern UI across all pages
-
-## 🛠️ Tech Stack
-
-- Next.js 14 (App Router)
-- Tailwind CSS & Radix UI
-- Zustand (state management)
-- Google Gemini API (AI assistant)
-- Lucide React (icons)
-
-## 📂 Key Files & Structure
-
-```
-app/
-  page.tsx           # Landing page
-  dashboard/         # User dashboard
-  missions/          # Missions listing
-  rewards/           # Rewards center
-  community/         # Community hub
-  blog/              # Blog system (index & posts)
-  calculator/        # Crop profit calculator
-  weather/           # Weather forecast
-  support/           # Full AI chat interface
-  signin/            # Sign-in page
-  api/
-    chat/route.ts    # Gemini AI proxy endpoint
-components/
-  ai-chat-widget.tsx # Floating AI widget
-  ...                # UI components, cards, nav, etc.
-public/              # Static assets
-styles/              # Global styles
-lib/, hooks/         # Utilities & custom hooks
-```
-
-## 📝 How to Run & Push Code
-
-1. Initialize git: `git init`
-2. Add files: `git add .`
-3. Commit: `git commit -m "SIH MVP: new features, fixes, UI updates"`
-4. Add remote: `git remote add origin <your-repo-url>`
-5. Push: `git push -u origin main`
-
-## 🌟 Recent Improvements
-
-- Interactive Missions: start, progress, complete missions; progress bar and points; recommendations and search/filter; persistent state in `localStorage`.
-- Crop Profit Calculator: advanced options & ROI calculations.
-- Weather Forecast: live city-based weather with improved UI.
-- Blog System Enhancements:
-   - Persistent posts (demo seed + user created)
-   - Write / Edit / Delete workflow with validation
-   - View counting (increments when opening a post)
-   - Like button on list cards (local state & persistence)
-   - Tag & Category filter chips + search bar (title/excerpt/tags)
-   - Inline "Write Blog" button always visible
-- Single Global Navbar: removed old duplicate secondary bar for cleaner layout.
-- Quiz Landing Screen: added interactive start screen before questions (foundation for progress persistence & leaderboard sync).
-- Demo sign-in flow and persistent demo user.
-- Consistent Back button navigation on all pages.
-- Modernized UI and improved accessibility.
-- Fixed build errors and improved client/server component handling.
-- Integrated Google Gemini API for AI chatbot.
-
-### ⏳ In Progress / Upcoming
-- Quiz persistent progress (store level, XP, badges in `localStorage`).
-- Leaderboard sync with real-time quiz progress.
-- Mission progress fine-grained updates (partial progress adjustments).
-- Structured backend persistence (planned: Postgres + Prisma or Supabase).
-
-## ⚡ Environment Variables
-
-- `GEMINI_API_KEY` – Google Gemini AI key
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` – Google OAuth
-- `NEXTAUTH_SECRET` – Session encryption
-- `NEXTAUTH_URL` – Base URL
-- `OPENWEATHER_API_KEY` – Weather API key
-
-## 💡 Troubleshooting
-
-## Roadmap
-
-| Phase | Goal | Highlights |
-
-## 🤝 Contributing
-
-Fork, branch, commit, and open a PR! Follow design and code conventions for UI and accessibility.
 
 ---
-Happy farming and sustainable growing! 🌱
+
+## <a id="environment-variables"></a>Environment Variables
+
+Create `.env.local` (not committed). Reference template in `.env.example`.
+
+Required:
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GEMINI_API_KEY=
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=http://localhost:3000
+OPENWEATHER_API_KEY=
+```
+
+Optional (Email auth):
+```
+EMAIL_SERVER=
+EMAIL_FROM=
+```
+
+Generate a secure secret (cross‑platform suggestion):
+Node: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`
+
+Gemini key: https://makersuite.google.com/app/apikey
+
+---
+
+## <a id="troubleshooting"></a>Troubleshooting
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| AI Chat 400 / invalid key | Missing / bad `GEMINI_API_KEY` | Add valid key & restart server |
+| Google OAuth callback error | Redirect URI mismatch | Add `http://localhost:3000/api/auth/callback/google` to console |
+| Email provider not showing | Missing both email vars | Set `EMAIL_SERVER`, `EMAIL_FROM` |
+| PowerShell script restrictions | Execution policy blocks pnpm | Use CMD or run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
+| Full reload instead of Fast Refresh | Large structural change or error | Check terminal warnings & fix component boundaries |
+
+---
+
+## Security Notes
+No secrets are committed. AI route limits output formatting to reduce prompt injection risk. Add rate limiting & server validation once persistence is introduced.
+
+---
+
+## Roadmap
+| Phase | Goal | Highlights |
 |-------|------|------------|
-| 1 | MVP polish | Auth, static missions, AI chat, mock rewards |
-| 2 | Persistence | Database integration (Prisma + Postgres) |
-| 3 | Community | Threads, replies, moderation tools |
-| 4 | Advanced AI | Multi-turn context, cropping plans |
-| 5 | Mobile PWA | Offline support, install prompts |
-| 6 | Marketplace | Partner reward catalog |
+| 1 | MVP Polish | Auth, static missions, AI chat, quiz & rewards baseline |
+| 2 | Persistence Layer | Postgres + Prisma / Supabase, mission & quiz storage |
+| 3 | Community Expansion | Threads, replies, moderation, rich media |
+| 4 | Advanced AI | Multi‑turn memory, context enrichment, agronomy advisories |
+| 5 | PWA & Offline | Install prompt, offline mission progress, cache strategy |
+| 6 | Marketplace | Partner reward catalog, redemption workflows |
+| 7 | Analytics & Impact | Track sustainable practice adoption metrics |
 
 ---
 
 ## Contributing
-
 1. Fork & branch
-2. Install deps & configure env
+2. Install dependencies & configure `.env.local`
 3. `npm run dev`
-4. Follow design + code conventions
-5. Open PR with description & screenshots
+4. Follow component + accessibility conventions
+5. PR with context + screenshots / before–after if UI
 
-### Planned Quality Enhancements
-Pending tasks: ESLint setup, spacing normalization, accessibility sweep, `cn` helper extraction, test harness.
+### Quality Backlog
+ESLint stricter config, unit tests (Vitest / Jest), accessibility audit, story-based component docs, i18n scaffolding.
 
 ---
 
+## License
+Currently unlicensed (default: all rights reserved). Add an OSS license (MIT / Apache-2.0) if external contributions are desired.
 
+---
 
 Thanks for supporting sustainable agriculture! 🌱
