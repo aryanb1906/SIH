@@ -17,6 +17,8 @@ import WeatherWidget from "@/components/weather-widget"
 import CropCalculator from "@/components/crop-calculator"
 import NotificationCenter from "@/components/notification-center"
 import FeedbackForm from "@/components/feedback-form"
+import { getTodayChallenge, saveChallenge } from "@/lib/dailyChallenge"
+import { recordActivity } from "@/lib/activity"
 
 // Achievements mock (from code base one)
 // Removed duplicate header/navbar block that was disturbing dashboard layout.
@@ -85,6 +87,30 @@ export default function DashboardPage() {
   // Example extra stats
   const sustainabilityScore = 78
   const currentStreak = currentUser.streak || 0
+  // Daily Challenge state
+  const [dailyChallenge, setDailyChallenge] = useState(() => getTodayChallenge())
+  // Achievements list (static placeholder)
+  const achievements: Array<{ name: string; icon: any; earned: boolean; color: string }> = [
+    { name: 'Water Guardian', icon: Droplets, earned: true, color: 'text-blue-500' },
+    { name: 'Soil Saver', icon: Leaf, earned: true, color: 'text-green-600' },
+    { name: 'Harvest Hero', icon: Award, earned: false, color: 'text-amber-500' },
+    { name: 'Mission Streak', icon: Calendar, earned: false, color: 'text-purple-500' }
+  ]
+
+  function acceptChallenge() {
+    if (dailyChallenge.status !== 'new') return
+    const upd = { ...dailyChallenge, status: 'accepted' as const }
+    setDailyChallenge(upd)
+    saveChallenge(upd)
+    recordActivity({ type: 'daily:accept', message: `Accepted daily challenge: ${upd.title}` })
+  }
+  function completeChallenge() {
+    if (dailyChallenge.status === 'completed') return
+    const upd = { ...dailyChallenge, status: 'completed' as const }
+    setDailyChallenge(upd)
+    saveChallenge(upd)
+    recordActivity({ type: 'daily:complete', message: `Completed daily challenge: ${upd.title}`, payload: { rewardPoints: upd.rewardPoints, rewardXP: upd.rewardXP } })
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
@@ -365,6 +391,36 @@ export default function DashboardPage() {
                 <div className="flex justify-between"><span className="text-sm">Soil Improved</span><span className="text-sm font-medium">1.5 hectares</span></div>
                 <div className="flex justify-between"><span className="text-sm">CO₂ Reduced</span><span className="text-sm font-medium">450kg</span></div>
                 <div className="flex justify-between"><span className="text-sm">Farmers Helped</span><span className="text-sm font-medium">8</span></div>
+              </CardContent>
+            </Card>
+
+            {/* Daily Challenge */}
+            <Card className={dailyChallenge.status === 'completed' ? 'border-green-500' : ''}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5 text-primary" />
+                  Daily Challenge
+                </CardTitle>
+                <CardDescription>{dailyChallenge.date}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <h4 className="font-medium mb-1">{dailyChallenge.title}</h4>
+                <p className="text-sm text-muted-foreground mb-3">{dailyChallenge.description}</p>
+                <div className="flex items-center gap-3 mb-4 text-xs text-muted-foreground">
+                  <Badge variant="secondary">{dailyChallenge.rewardPoints} pts</Badge>
+                  <Badge variant="outline">{dailyChallenge.rewardXP} XP</Badge>
+                  <Badge variant={dailyChallenge.status === 'completed' ? 'default' : 'outline'}>{dailyChallenge.status}</Badge>
+                </div>
+                {dailyChallenge.status === 'new' && (
+                  <Button size="sm" onClick={acceptChallenge} className="w-full">Accept Challenge</Button>
+                )}
+                {dailyChallenge.status === 'accepted' && (
+                  <Button size="sm" variant="secondary" onClick={completeChallenge} className="w-full">Mark Completed</Button>
+                )}
+                {dailyChallenge.status === 'completed' && (
+                  <div className="text-green-600 text-sm font-medium">Completed! Rewards applied locally.</div>
+                )}
+                <div className="mt-4 text-[10px] text-muted-foreground">Daily challenge rotates every 24h (local time). Stored only in your browser.</div>
               </CardContent>
             </Card>
 

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { MissionCard } from "@/components/mission-card"
 import { Leaf, Search, Filter, ArrowLeft } from "lucide-react"
+import { recordActivity } from "@/lib/activity"
 import Link from "next/link"
 
 interface Mission {
@@ -132,12 +133,14 @@ export default function MissionsPage() {
   function startMission(id: string) {
     setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "in-progress", progress: m.progress || 0 } : m))
     toast({ title: "Mission Started", description: "You have started a new mission!" })
+    recordActivity({ type: 'mission:start', message: `Started mission ${id}` })
   }
   function completeMission(id: string) {
     setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "completed", progress: 100 } : m))
     const mission = missions.find(m => m.id === id)
     if (mission) setUserPoints(p => p + mission.rewards)
     toast({ title: "Mission Completed", description: "Congratulations! Mission completed and points awarded." })
+    recordActivity({ type: 'mission:complete', message: `Completed mission ${id}` })
   }
   function updateProgress(id: string, stepPoints: number) {
     setMissions(prev => prev.map(m => {
@@ -156,8 +159,10 @@ export default function MissionsPage() {
     if (mission && mission.progress < 100 && mission.progress + stepPoints >= 100) {
       setUserPoints(p => p + mission.rewards)
       toast({ title: "Mission Completed", description: "Congratulations! Mission completed and points awarded." })
+      recordActivity({ type: 'mission:complete', message: `Completed mission ${id}` })
     } else {
       toast({ title: "Progress Updated", description: "Mission progress updated." })
+      recordActivity({ type: 'mission:progress', message: `Progress updated for mission ${id}` })
     }
   }
   // Simple recommendation: not completed & not started first
@@ -250,7 +255,7 @@ export default function MissionsPage() {
               id={m.id}
               title={m.title}
               description={m.description}
-              difficulty={m.difficulty}
+              difficulty={(m.difficulty === 'beginner' ? 'Easy' : m.difficulty === 'intermediate' ? 'Medium' : m.difficulty === 'advanced' ? 'Hard' : m.difficulty) as 'Easy' | 'Medium' | 'Hard'}
               duration={m.duration}
               rewards={m.rewards}
               progress={m.progress}

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { Container } from "@/components/container"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { recordActivity } from "@/lib/activity"
 
 // Load quiz data
 async function fetchQuizData() {
@@ -110,6 +111,7 @@ export default function QuizPage() {
                         setScore(0);
                         setBadges([]);
                         setShowLanding(false);
+                        recordActivity({ type: 'quiz:start', message: `Started quiz (${selectedLevel}/${selectedCategory})` })
                     }}
                 >
                     Start Quiz
@@ -152,12 +154,14 @@ export default function QuizPage() {
         if (isCorrect && correctSound) correctSound.play()
         if (!isCorrect && incorrectSound) incorrectSound.play()
         setAnswerAnim(isCorrect ? "animate-correct" : "animate-incorrect")
+        recordActivity({ type: 'quiz:answer', message: `Answered question ${current + 1}/${questions.length} (${isCorrect ? 'correct' : 'incorrect'})`, payload: { correct: isCorrect, newScore } })
         setTimeout(() => setAnswerAnim(""), 700)
     }
 
     function nextQuestion() {
         if (current === questions.length - 1) {
             setShowNamePrompt(true)
+            recordActivity({ type: 'quiz:finish', message: `Finished quiz with score ${score}` })
             return
         }
         setCurrent(current + 1)
