@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Badge } from "@/components/ui/badge"
-import { Menu, Leaf, BookOpen, Users, Trophy, Brain, MessageCircle, HelpCircle, User, Coins } from "lucide-react"
+import { Menu, Leaf, BookOpen, Users, Trophy, Brain, MessageCircle, HelpCircle, User, Coins, Bell } from "lucide-react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { useDemoSession } from "@/components/session-provider"
@@ -65,6 +65,30 @@ export default function MobileNav({ currentPath }: MobileNavProps) {
       label: "FAQ",
       icon: HelpCircle,
       description: "Common questions",
+    },
+    {
+      href: "/leaderboard",
+      label: "Leaderboard",
+      icon: Trophy,
+      description: "Top quiz scores"
+    },
+    {
+      href: "/activity",
+      label: "Activity",
+      icon: Brain,
+      description: "Recent events"
+    },
+    {
+      href: "/data",
+      label: "Data",
+      icon: HelpCircle,
+      description: "Local storage info"
+    },
+    {
+      href: "/notifications",
+      label: "Notifications",
+      icon: Bell,
+      description: "Recent alerts"
     },
   ]
 

@@ -73,6 +73,9 @@ export default function RootLayout({
                 <Link href="/blog" className="text-foreground hover:text-primary transition-colors">Blog</Link>
                 <Link href="/support" className="text-foreground hover:text-primary transition-colors">Support</Link>
                 <Link href="/faq" className="text-foreground hover:text-primary transition-colors">FAQ</Link>
+                <Link href="/leaderboard" className="text-foreground hover:text-primary transition-colors">Leaderboard</Link>
+                <Link href="/activity" className="text-foreground hover:text-primary transition-colors">Activity</Link>
+                <Link href="/data" className="text-foreground hover:text-primary transition-colors">Data</Link>
               </nav>
               {/* Right: User Section & Demo Button */}
               <div className="flex items-center gap-4 min-w-[220px] justify-end">
