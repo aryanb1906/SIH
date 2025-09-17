@@ -20,6 +20,7 @@ interface MissionCardProps {
   onComplete: (id: string) => void
   onUpdateProgress?: (id: string, stepPoints: number) => void
   onOpen?: (id: string) => void
+  onRestart?: (id: string) => void
 }
 
 export function MissionCard({
@@ -36,6 +37,7 @@ export function MissionCard({
   onComplete,
   onUpdateProgress,
   onOpen,
+  onRestart,
 }: MissionCardProps) {
   const difficultyColors = {
     Easy: "bg-green-100 text-green-800",
@@ -96,17 +98,27 @@ export function MissionCard({
               )}
             </div>
 
-            <Button
-              className="w-full"
-              variant={isCompleted ? "outline" : isInProgress ? "secondary" : "default"}
-              onClick={() => {
-                if (isCompleted) return;
-                if (!isInProgress) onStart(id);
-                openModal();
-              }}
-            >
-              {isCompleted ? "Completed" : isInProgress ? "Resume" : "Start Mission"}
-            </Button>
+            {isCompleted ? (
+              <div className="flex gap-2 w-full">
+                <Button className="flex-1 rounded" variant="outline" disabled>
+                  Completed
+                </Button>
+                <Button className="flex-1 rounded" variant="default" onClick={() => onRestart && onRestart(id)}>
+                  Restart Mission
+                </Button>
+              </div>
+            ) : (
+              <Button
+                className="w-full rounded"
+                variant={isInProgress ? "secondary" : "default"}
+                onClick={() => {
+                  if (!isInProgress) onStart(id);
+                  openModal();
+                }}
+              >
+                {isInProgress ? "Resume" : "Start Mission"}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

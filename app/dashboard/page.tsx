@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useAppStore } from "@/lib/store"
 import { useEffect, useState } from "react"
+import { Dialog } from "@/components/ui/dialog"
 import {
   Trophy, Target, BookOpen, Users, Package, Bell, TrendingUp,
   Calendar, Star, ArrowRight, Leaf, Droplets, Calculator, Award, ArrowLeft
@@ -24,6 +25,7 @@ import { recordActivity } from "@/lib/activity"
 // Removed duplicate header/navbar block that was disturbing dashboard layout.
 
 export default function DashboardPage() {
+  const [openMission, setOpenMission] = useState<any | null>(null);
   // Back button at the top
   const BackButton = () => (
     <div className="flex items-center mb-4">
@@ -263,9 +265,27 @@ export default function DashboardPage() {
                           <Progress value={mission.progress} className="h-2" />
                         </div>
                       </div>
-                      <Button size="sm">Continue</Button>
+                      <Button size="sm" onClick={() => setOpenMission(mission)}>Continue</Button>
                     </div>
                   ))}
+                  {/* Mission Modal */}
+                  {openMission && (
+                    <Dialog open={!!openMission} onOpenChange={() => setOpenMission(null)}>
+                      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
+                        <div className="bg-background rounded-lg shadow-lg p-6 w-full max-w-md">
+                          <h3 className="text-xl font-bold mb-2">{openMission.title}</h3>
+                          <p className="mb-4 text-muted-foreground">{openMission.description}</p>
+                          <div className="mb-4 flex items-center gap-2">
+                            <Badge variant="secondary">{openMission.difficulty}</Badge>
+                            <span className="text-sm">{openMission.xpReward} XP • {openMission.pointsReward} points</span>
+                          </div>
+                          <Progress value={openMission.progress} className="h-2 mb-4" />
+                          <Button onClick={() => { setOpenMission(null); /* Optionally mark as complete here */ }} className="w-full">Mark as Complete</Button>
+                          <Button variant="outline" onClick={() => setOpenMission(null)} className="w-full mt-2">Close</Button>
+                        </div>
+                      </div>
+                    </Dialog>
+                  )}
                 </div>
               </CardContent>
             </Card>

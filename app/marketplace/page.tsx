@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAppStore } from "@/lib/store"
-import { useEffect, useState } from "react"
-import { Search, Filter, Star, ShoppingCart, Heart, Package, Truck, Shield, ArrowRight, ArrowLeft } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Search, Filter, Star, ShoppingCart, Heart, Package, Truck, Shield, ArrowRight, ArrowLeft, Minus, Plus } from "lucide-react"
 import Link from "next/link"
 
 export default function MarketplacePage() {
@@ -16,14 +16,20 @@ export default function MarketplacePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [sortBy, setSortBy] = useState("popularity")
-  const [filteredItems, setFilteredItems] = useState(marketplaceItems)
+  const [quantities, setQuantities] = useState<{ [id: string]: number }>({})
+  const [page, setPage] = useState(1)
+  const itemsPerPage = 8
 
   useEffect(() => {
-    loadMarketplaceItems()
-  }, [loadMarketplaceItems])
+    if (marketplaceItems.length === 0) {
+      loadMarketplaceItems();
+    }
+  }, [loadMarketplaceItems, marketplaceItems.length]);
 
-  useEffect(() => {
-    let filtered = marketplaceItems
+  const categories = useMemo(() => ["all", ...Array.from(new Set(marketplaceItems.map(item => item.category)))], [marketplaceItems])
+
+  const filteredItems = useMemo(() => {
+    let filtered = [...marketplaceItems]
 
     if (searchTerm) {
       filtered = filtered.filter(item =>
@@ -37,35 +43,50 @@ export default function MarketplacePage() {
       filtered = filtered.filter(item => item.category === selectedCategory)
     }
 
-    // Sort items
     switch (sortBy) {
       case "price-low":
-        filtered = filtered.sort((a, b) => a.price - b.price)
+        filtered.sort((a, b) => a.price - b.price)
         break
       case "price-high":
-        filtered = filtered.sort((a, b) => b.price - a.price)
+        filtered.sort((a, b) => b.price - a.price)
         break
       case "rating":
-        filtered = filtered.sort((a, b) => b.rating - a.rating)
+        filtered.sort((a, b) => b.rating - a.rating)
         break
       case "popularity":
       default:
-        filtered = filtered.sort((a, b) => b.reviews - a.reviews)
+        filtered.sort((a, b) => b.reviews - a.reviews)
         break
     }
 
-    setFilteredItems(filtered)
+    return filtered
   }, [marketplaceItems, searchTerm, selectedCategory, sortBy])
 
-  const categories = ["all", ...Array.from(new Set(marketplaceItems.map(item => item.category)))]
+  // reset to page 1 on filter changes
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm, selectedCategory, sortBy])
+
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage))
+  const pagedItems = useMemo(() => {
+    const start = (page - 1) * itemsPerPage
+    return filteredItems.slice(start, start + itemsPerPage)
+  }, [filteredItems, page])
 
   const handleAddToCart = (item: any) => {
-    addToCart(item)
+    const quantity = quantities[item.id] || 1
+    addToCart(item, quantity)
   }
 
-  const isInCart = (itemId: string) => {
-    return cart.some(item => item.id === itemId)
+  const handleQtyDelta = (itemId: string, delta: number) => {
+    setQuantities(prev => {
+      const current = prev[itemId] || 1
+      const next = Math.max(1, Math.min(99, current + delta))
+      return { ...prev, [itemId]: next }
+    })
   }
+
+  const isInCart = (itemId: string) => cart.some(ci => ci.id === itemId)
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted">
@@ -164,7 +185,7 @@ export default function MarketplacePage() {
 
         {/* Products Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredItems.map((item) => (
+          {pagedItems.map((item) => (
             <Card key={item.id} className="group hover:shadow-lg transition-all duration-300">
               <CardHeader className="pb-3">
                 <div className="aspect-square bg-muted rounded-lg mb-3 flex items-center justify-center">
@@ -214,19 +235,47 @@ export default function MarketplacePage() {
                   <span className="font-medium">{item.seller}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => handleAddToCart(item)}
-                    disabled={!item.inStock || isInCart(item.id)}
-                    className="flex-1"
-                    size="sm"
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    {isInCart(item.id) ? 'In Cart' : item.inStock ? 'Add to Cart' : 'Out of Stock'}
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Heart className="h-4 w-4" />
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs text-muted-foreground">Qty:</span>
+                    <div className="inline-flex items-center border rounded-md">
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-sm disabled:opacity-50"
+                        onClick={() => handleQtyDelta(item.id, -1)}
+                        disabled={!item.inStock || isInCart(item.id)}
+                        aria-label="Decrease quantity"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <span className="w-8 text-center text-sm select-none">
+                        {quantities[item.id] || 1}
+                      </span>
+                      <button
+                        type="button"
+                        className="px-2 py-1 text-sm disabled:opacity-50"
+                        onClick={() => handleQtyDelta(item.id, +1)}
+                        disabled={!item.inStock || isInCart(item.id)}
+                        aria-label="Increase quantity"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => handleAddToCart(item)}
+                      disabled={!item.inStock || isInCart(item.id)}
+                      className="flex-1"
+                      size="sm"
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      {isInCart(item.id) ? 'In Cart' : item.inStock ? 'Add to Cart' : 'Out of Stock'}
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <Heart className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -243,16 +292,27 @@ export default function MarketplacePage() {
           </div>
         )}
 
+        {/* Pagination */}
+        {filteredItems.length > 0 && (
+          <div className="flex items-center justify-center gap-3 mt-10">
+            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>
+              <ArrowLeft className="h-4 w-4 mr-2" /> Prev
+            </Button>
+            <span className="text-sm">Page {page} of {totalPages}</span>
+            <Button variant="outline" size="sm" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
+              Next <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
+          </div>
+        )}
+
         {/* Cart Summary */}
         {cart.length > 0 && (
-          <div className="fixed bottom-4 right-4 z-50">
-            <Link href="/cart">
-              <Button className="shadow-lg">
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Cart ({cart.length})
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </Link>
+          <div className="fixed bottom-24 right-4 z-50">
+            <Button className="shadow-lg" onClick={() => (window.location.href = '/cart')}>
+              <ShoppingCart className="h-4 w-4 mr-2" />
+              View Cart ({cart.length})
+              <ArrowRight className="h-4 w-4 ml-2" />
+            </Button>
           </div>
         )}
       </Container>

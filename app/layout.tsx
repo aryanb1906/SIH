@@ -22,8 +22,6 @@ export const metadata: Metadata = {
   generator: "FarmGrow",
   keywords: "farming, agriculture, sustainable farming, organic farming, quiz, rewards, community",
   manifest: "/manifest.json",
-  themeColor: "#d97706",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
   authors: [{ name: "FarmGrow Team" }],
   appleWebApp: {
     capable: true,
@@ -44,6 +42,17 @@ export const metadata: Metadata = {
     title: "FarmGrow - Sustainable Farming Platform",
     description: "Empowering farmers with sustainable practices through gamified learning, community support, and AI assistance."
   }
+}
+
+// Move themeColor and viewport to generateViewport export as per Next.js 13+ requirements
+export function generateViewport() {
+  return {
+    themeColor: '#d97706',
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: 'no',
+  };
 }
 
 export default function RootLayout({

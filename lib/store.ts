@@ -117,6 +117,11 @@ export interface MarketplaceItem {
   discount?: number
 }
 
+// Cart item extends a marketplace item with quantity
+export interface CartItem extends MarketplaceItem {
+  quantity: number
+}
+
 // Store interface
 interface AppState {
   // User state
@@ -144,7 +149,7 @@ interface AppState {
 
   // Marketplace
   marketplaceItems: MarketplaceItem[]
-  cart: MarketplaceItem[]
+  cart: CartItem[]
 
   // UI state
   sidebarOpen: boolean
@@ -181,7 +186,8 @@ interface AppState {
 
   // Marketplace actions
   loadMarketplaceItems: () => void
-  addToCart: (item: MarketplaceItem) => void
+  addToCart: (item: MarketplaceItem, quantity?: number) => void
+  updateCartItemQuantity: (itemId: string, quantity: number) => void
   removeFromCart: (itemId: string) => void
   clearCart: () => void
 
@@ -336,6 +342,62 @@ const generateMockMarketplaceItems = (): MarketplaceItem[] => [
     rating: 4.7,
     reviews: 234,
     inStock: true
+  },
+  {
+    id: '4',
+    name: 'Biofertilizer 2kg',
+    description: 'Eco-friendly biofertilizer for all crops',
+    price: 399,
+    originalPrice: 499,
+    category: 'Fertilizers',
+    image: '/images/biofertilizer.jpg',
+    seller: 'AgroLife',
+    rating: 4.5,
+    reviews: 120,
+    inStock: true,
+    discount: 20
+  },
+  {
+    id: '5',
+    name: 'Garden Tool Set',
+    description: 'Complete set of tools for home gardening',
+    price: 799,
+    originalPrice: 999,
+    category: 'Tools',
+    image: '/images/garden-tools.jpg',
+    seller: 'ToolMaster',
+    rating: 4.9,
+    reviews: 210,
+    inStock: true,
+    discount: 20
+  },
+  {
+    id: '6',
+    name: 'Organic Pesticide',
+    description: 'Safe and effective organic pesticide',
+    price: 199,
+    originalPrice: 249,
+    category: 'Pesticides',
+    image: '/images/organic-pesticide.jpg',
+    seller: 'GreenGuard',
+    rating: 4.3,
+    reviews: 80,
+    inStock: true,
+    discount: 20
+  },
+  {
+    id: '7',
+    name: 'Watering Can 5L',
+    description: 'Durable plastic watering can for easy irrigation',
+    price: 249,
+    originalPrice: 299,
+    category: 'Tools',
+    image: '/images/watering-can.jpg',
+    seller: 'FarmEssentials',
+    rating: 4.7,
+    reviews: 60,
+    inStock: true,
+    discount: 17
   }
 ]
 
@@ -487,10 +549,30 @@ export const useAppStore = create<AppState>()(
 
       // Marketplace actions
       loadMarketplaceItems: () => set({ marketplaceItems: generateMockMarketplaceItems() }),
-      addToCart: (item) => {
-        set((state) => ({
-          cart: [...state.cart, item]
-        }))
+      addToCart: (item, quantity = 1) => {
+        set((state) => {
+          const existing = state.cart.find(ci => ci.id === item.id)
+          if (existing) {
+            return {
+              cart: state.cart.map(ci =>
+                ci.id === item.id ? { ...ci, quantity: Math.min(99, ci.quantity + quantity) } : ci
+              )
+            }
+          }
+          const cartItem: CartItem = { ...item, quantity: Math.max(1, Math.min(99, quantity)) }
+          return { cart: [...state.cart, cartItem] }
+        })
+      },
+      updateCartItemQuantity: (itemId, quantity) => {
+        set((state) => {
+          const qty = Math.max(0, Math.min(99, quantity))
+          if (qty === 0) {
+            return { cart: state.cart.filter(ci => ci.id !== itemId) }
+          }
+          return {
+            cart: state.cart.map(ci => ci.id === itemId ? { ...ci, quantity: qty } : ci)
+          }
+        })
       },
       removeFromCart: (itemId) => {
         set((state) => ({
@@ -505,6 +587,18 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'farmgrow-storage',
+      version: 2,
+      migrate: (persistedState: any, version) => {
+        if (!persistedState) return persistedState
+        // v1 -> v2: ensure cart items have quantity
+        if (version < 2 && Array.isArray(persistedState.cart)) {
+          persistedState.cart = persistedState.cart.map((it: any) => ({
+            ...it,
+            quantity: typeof it?.quantity === 'number' ? it.quantity : 1,
+          }))
+        }
+        return persistedState
+      },
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,

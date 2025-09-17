@@ -16,16 +16,7 @@ export function FeedbackForm() {
     const [submitted, setSubmitted] = useState(false)
     const [items, setItems] = useState<FeedbackItem[]>([])
 
-    useEffect(() => {
-        try {
-            const stored = localStorage.getItem("feedbackItems")
-            if (stored) setItems(JSON.parse(stored))
-        } catch { }
-    }, [])
-
-    useEffect(() => {
-        localStorage.setItem("feedbackItems", JSON.stringify(items))
-    }, [items])
+    // Removed localStorage usage for SSR compatibility
 
     function onSubmit(e: React.FormEvent) {
         e.preventDefault()

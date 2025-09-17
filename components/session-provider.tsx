@@ -39,28 +39,9 @@ export default function SessionProviderWrapper({ children }: SessionProviderWrap
   const [user, setUser] = useState<DemoUser | null>(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  useEffect(() => {
-    // Check for demo authentication on mount
-    const demoAuth = localStorage.getItem("demo-authenticated")
-    if (demoAuth === "true") {
-      // Always use fixed demo user info
-      setUser({
-        id: "demo-user-123",
-        name: "demouser",
-        email: "demo@example.com",
-        image: "/diverse-user-avatars.png",
-        level: 5,
-        xp: 1200,
-        coins: 500,
-        streak: 7,
-      })
-      setIsAuthenticated(true)
-    }
-  }, [])
+  // Removed localStorage usage for SSR compatibility
 
   const signOut = () => {
-    localStorage.removeItem("demo-authenticated")
-    localStorage.removeItem("demo-user")
     setUser(null)
     setIsAuthenticated(false)
     window.location.href = "/"

@@ -1,4 +1,13 @@
 "use client"
+
+// Next.js 13+ recommended viewport export
+export function generateViewport() {
+  return {
+    themeColor: '#ffffff',
+    width: 'device-width',
+    initialScale: 1,
+  };
+}
 import { useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
@@ -103,32 +112,15 @@ export default function MissionsPage() {
   const [missions, setMissions] = useState<Mission[]>([])
   const [query, setQuery] = useState("")
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [userPoints, setUserPoints] = useState<number>(() => Number(localStorage.getItem("missionPoints") || 0))
+  const [userPoints, setUserPoints] = useState<number>(0)
   const [searchError, setSearchError] = useState("")
   const { toast } = useToast()
 
   useEffect(() => {
-    const stored = localStorage.getItem("missionsState")
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        if (Array.isArray(parsed)) {
-          setMissions(parsed)
-          return
-        }
-      } catch { }
-    }
     setMissions(initialMissions)
   }, [])
 
-  useEffect(() => {
-    if (missions.length) {
-      localStorage.setItem("missionsState", JSON.stringify(missions))
-    }
-  }, [missions])
-  useEffect(() => {
-    localStorage.setItem("missionPoints", String(userPoints))
-  }, [userPoints])
+
 
   function startMission(id: string) {
     setMissions(prev => prev.map(m => m.id === id ? { ...m, status: "in-progress", progress: m.progress || 0 } : m))
@@ -264,6 +256,10 @@ export default function MissionsPage() {
               onStart={startMission}
               onComplete={completeMission}
               onUpdateProgress={updateProgress}
+              onRestart={(id) => {
+                setMissions(prev => prev.map(mis => mis.id === id ? { ...mis, progress: 0, status: 'not-started' } : mis));
+                toast({ title: 'Mission Restarted', description: 'You can start this mission again!' });
+              }}
             />
           ))}
           {filtered.length === 0 && (
