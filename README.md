@@ -16,7 +16,7 @@
 ---
 
 ## Overview
-FarmGrow motivates farmers to adopt sustainable, climate‑smart practices through structured missions, quizzes, community interaction, and an AI agronomy assistant. The current build is an MVP optimized for rapid iteration, accessibility, and extensibility.
+FarmGrow motivates farmers to adopt sustainable, Climate‑smart practices through structured missions, quizzes, community interaction, and an AI agronomy assistant. The current build is an MVP optimized for rapid iteration, accessibility, and extensibility.
 
 ## <a id="features"></a>Core Features
 
